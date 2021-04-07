@@ -30,7 +30,7 @@ class _SignInState extends State<SignIn> {
         title: Text('Sign in'),
         actions: <Widget>[
           FlatButton.icon(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.app_registration),
             label: Text('Register Now'),
             onPressed: () => widget.toggleView(),
           ),
