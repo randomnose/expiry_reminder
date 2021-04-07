@@ -1,3 +1,4 @@
+import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
 
@@ -25,10 +26,10 @@ class _RegisterState extends State<Register> {
       appBar: AppBar(
         backgroundColor: Colors.brown[400],
         elevation: 0.0,
-        title: Text('Sign up'),
+        title: Text('Sign up now'),
         actions: <Widget>[
           FlatButton.icon(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.login),
             label: Text('Sign In'),
             onPressed: () => widget.toggleView(),
           ),
@@ -42,6 +43,7 @@ class _RegisterState extends State<Register> {
             children: <Widget>[
               SizedBox(height: 20.0),
               TextFormField(
+                decoration: textInputDecoration.copyWith(hintText: 'Email'),
                 validator: (val) => val.isEmpty ? 'Enter an email' : null,
                 onChanged: (val) {
                   setState(() => email = val);
@@ -49,34 +51,37 @@ class _RegisterState extends State<Register> {
               ),
               SizedBox(height: 20.0),
               TextFormField(
+                decoration: textInputDecoration.copyWith(hintText: 'Password'),
                 obscureText: true,
-                validator: (val) => val.length < 6 ? 'Enter a password 6+ chars long' : null,
+                validator: (val) =>
+                    val.length < 6 ? 'Enter a password 6+ chars long' : null,
                 onChanged: (val) {
                   setState(() => password = val);
                 },
               ),
               SizedBox(height: 20.0),
               RaisedButton(
-                color: Colors.pink[400],
-                child: Text(
-                  'Register',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () async {
-                  if(_formKey.currentState.validate()){
-                    dynamic result = await _auth.registerWithEmailAndPassword(email, password);
-                    if(result == null) {
-                      setState(() {
-                        error = 'Please supply a valid email';
-                      });
+                  color: Colors.pink[400],
+                  child: Text(
+                    'Register',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () async {
+                    if (_formKey.currentState.validate()) {
+                      dynamic result = await _auth.registerWithEmailAndPassword(
+                          email: email, password: password);
+                      if (result == null) {
+                        setState(() {
+                          error = 'Please check your details.';
+                        });
+                      }
                     }
-                  }
-                }
-              ),
+                  }),
               SizedBox(height: 12.0),
               Text(
                 error,
-                style: TextStyle(color: Colors.red, fontSize: 14.0),
+                style: TextStyle(fontSize: 16, color: Colors.red, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               )
             ],
           ),

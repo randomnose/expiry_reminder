@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
 
-class Home extends StatelessWidget {
+/// ========================================================
+/// This is the landing page of the mobile application
+/// ========================================================
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
   final AuthService _auth = AuthService();
 
   @override
