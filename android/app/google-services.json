@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "325833872359",
+    "project_id": "eson-s-expiry-reminder",
+    "storage_bucket": "eson-s-expiry-reminder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:325833872359:android:b734a571b3a349a91de342",
+        "android_client_info": {
+          "package_name": "com.eson.expiry_reminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "325833872359-ld3s4903cgsvqpdnlgh64t0rqcleq0hl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAcRNZx3gM3v2LyaueC4paD9_2b-cb0lA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "325833872359-ld3s4903cgsvqpdnlgh64t0rqcleq0hl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "325833872359-kut4h4f6l6cjnpm6fu424hhj3346no5k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.eson.expiryReminder"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
