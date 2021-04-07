@@ -14,23 +14,21 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Scaffold(
-        backgroundColor: Colors.brown[50],
-        appBar: AppBar(
-          title: Text('Expiry Reminder'),
-          backgroundColor: Colors.brown[400],
-          elevation: 0.0,
-          actions: <Widget>[
-            FlatButton.icon(
-              icon: Icon(Icons.logout),
-              label: Text('Log out'),
-              onPressed: () async {
-                await _auth.signOut();
-              },
-            ),
-          ],
-        ),
+    return Scaffold(
+      backgroundColor: Colors.brown[50],
+      appBar: AppBar(
+        title: Text('Expiry Reminder'),
+        backgroundColor: Colors.brown[400],
+        elevation: 0.0,
+        actions: <Widget>[
+          FlatButton.icon(
+            icon: Icon(Icons.logout),
+            label: Text('Log out'),
+            onPressed: () async {
+              await _auth.signOut();
+            },
+          ),
+        ],
       ),
     );
   }

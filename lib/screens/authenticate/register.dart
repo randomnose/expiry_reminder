@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
 
@@ -14,6 +15,7 @@ class _RegisterState extends State<Register> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   String error = '';
+  bool loading = false;
 
   // text field state
   String email = '';
@@ -21,72 +23,85 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.brown[100],
-      appBar: AppBar(
-        backgroundColor: Colors.brown[400],
-        elevation: 0.0,
-        title: Text('Sign up now'),
-        actions: <Widget>[
-          FlatButton.icon(
-            icon: Icon(Icons.login),
-            label: Text('Sign In'),
-            onPressed: () => widget.toggleView(),
-          ),
-        ],
-      ),
-      body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 20.0),
-              TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Email'),
-                validator: (val) => val.isEmpty ? 'Enter an email' : null,
-                onChanged: (val) {
-                  setState(() => email = val);
-                },
+    return loading
+        ? Loading()
+        : Scaffold(
+            backgroundColor: Colors.brown[100],
+            appBar: AppBar(
+              backgroundColor: Colors.brown[400],
+              elevation: 0.0,
+              title: Text('Sign up now'),
+              actions: <Widget>[
+                FlatButton.icon(
+                  icon: Icon(Icons.login),
+                  label: Text('Sign In'),
+                  onPressed: () => widget.toggleView(),
+                ),
+              ],
+            ),
+            body: Container(
+              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    TextFormField(
+                      decoration:
+                          textInputDecoration.copyWith(hintText: 'Email'),
+                      validator: (val) => val.isEmpty ? 'Enter an email' : null,
+                      onChanged: (val) {
+                        setState(() => email = val);
+                      },
+                    ),
+                    SizedBox(height: 20.0),
+                    TextFormField(
+                      decoration:
+                          textInputDecoration.copyWith(hintText: 'Password'),
+                      obscureText: true,
+                      validator: (val) => val.length < 6
+                          ? 'Enter a password 6+ chars long'
+                          : null,
+                      onChanged: (val) {
+                        setState(() => password = val);
+                      },
+                    ),
+                    SizedBox(height: 20.0),
+                    RaisedButton(
+                        color: Colors.pink[400],
+                        child: Text(
+                          'Register',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () async {
+                          if (_formKey.currentState.validate()) {
+                            setState(() {
+                              loading = true;
+                            });
+                            dynamic result =
+                                await _auth.registerWithEmailAndPassword(
+                                    email: email, password: password);
+                            if (result == null) {
+                              setState(() {
+                                error = 'Please check your details.';
+                                loading = false;
+                              });
+                            }
+                          }
+                        }),
+                    SizedBox(height: 12.0),
+                    Text(
+                      error,
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
               ),
-              SizedBox(height: 20.0),
-              TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Password'),
-                obscureText: true,
-                validator: (val) =>
-                    val.length < 6 ? 'Enter a password 6+ chars long' : null,
-                onChanged: (val) {
-                  setState(() => password = val);
-                },
-              ),
-              SizedBox(height: 20.0),
-              RaisedButton(
-                  color: Colors.pink[400],
-                  child: Text(
-                    'Register',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: () async {
-                    if (_formKey.currentState.validate()) {
-                      dynamic result = await _auth.registerWithEmailAndPassword(
-                          email: email, password: password);
-                      if (result == null) {
-                        setState(() {
-                          error = 'Please check your details.';
-                        });
-                      }
-                    }
-                  }),
-              SizedBox(height: 12.0),
-              Text(
-                error,
-                style: TextStyle(fontSize: 16, color: Colors.red, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
   }
 }
