@@ -12,13 +12,13 @@ const textInputDecoration = InputDecoration(
   ),
 );
 
-const normalText = TextStyle(
+const eRNormalText = TextStyle(
   fontSize: 14,
   fontWeight: FontWeight.normal,
   color: Colors.black
 );
 
-const warningText = TextStyle(
+const eRWarningText = TextStyle(
   fontSize: 14,
   fontWeight: FontWeight.bold,
   color: Colors.red

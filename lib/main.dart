@@ -3,7 +3,7 @@ import 'package:expiry_reminder/screens/wrapper.dart';
 import 'package:expiry_reminder/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:get/get.dart';
 void main() {
   runApp(MyApp());
 }
@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return StreamProvider<User>.value(
       value: AuthService().user,
       child: MaterialApp(
+        key: Get.key,
         debugShowCheckedModeBanner: false,
         home: Wrapper(),
       ),
