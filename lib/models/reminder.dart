@@ -1,7 +1,8 @@
 class Reminder {
-  final String name;
-  final String sugars;
-  final int strength;
+  final dynamic imageURL;
+  final String productName;
+  final DateTime expiryDate;
+  final String description;
 
-  Reminder({this.name, this.sugars, this.strength});
+  Reminder(this.imageURL, this.productName, this.expiryDate, this.description); 
 }
