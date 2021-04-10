@@ -2,6 +2,7 @@ import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
+import 'package:get/get.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -13,13 +14,32 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   final AuthService _auth = AuthService();
-  final _formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _formKey;
   String error = '';
   bool loading = false;
 
   // text field state
   String email = '';
   String password = '';
+
+  TextEditingController _emailController;
+  TextEditingController _passwordController;
+
+  @override
+  void initState() {
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+    _formKey = GlobalKey<FormState>();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _formKey = null;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +50,14 @@ class _RegisterState extends State<Register> {
             appBar: AppBar(
               backgroundColor: Colors.brown[400],
               elevation: 0.0,
-              title: Text('Sign up now'),
-              actions: <Widget>[
-                FlatButton.icon(
-                  icon: Icon(Icons.login),
-                  label: Text('Sign In'),
-                  onPressed: () => widget.toggleView(),
-                ),
-              ],
+              title: Text('Expiry Reinder - Sign up now'),
+              // actions: <Widget>[
+              //   FlatButton.icon(
+              //     icon: Icon(Icons.login),
+              //     label: Text('Sign In'),
+              //     onPressed: () => widget.toggleView(),
+              //   ),
+              // ],
             ),
             body: Container(
               padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
@@ -47,6 +67,7 @@ class _RegisterState extends State<Register> {
                   children: <Widget>[
                     SizedBox(height: 20.0),
                     TextFormField(
+                      controller: _emailController,
                       decoration:
                           textInputDecoration.copyWith(hintText: 'Email'),
                       validator: (val) => val.isEmpty ? 'Enter an email' : null,
@@ -56,6 +77,7 @@ class _RegisterState extends State<Register> {
                     ),
                     SizedBox(height: 20.0),
                     TextFormField(
+                      controller: _passwordController,
                       decoration:
                           textInputDecoration.copyWith(hintText: 'Password'),
                       obscureText: true,
@@ -67,29 +89,45 @@ class _RegisterState extends State<Register> {
                       },
                     ),
                     SizedBox(height: 20.0),
-                    RaisedButton(
-                        color: Colors.pink[400],
-                        child: Text(
-                          'Register',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          if (_formKey.currentState.validate()) {
-                            setState(() {
-                              loading = true;
-                            });
-                            dynamic result =
-                                await _auth.registerWithEmailAndPassword(
-                                    email: email, password: password);
-                            if (result == null) {
+                    ButtonTheme(
+                      minWidth: Get.width * 0.7,
+                      child: RaisedButton(
+                          color: Colors.pink[400],
+                          child: Text(
+                            'Register',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () async {
+                            if (_formKey.currentState.validate()) {
                               setState(() {
-                                error = 'Please check your details.';
-                                loading = false;
+                                loading = true;
                               });
+                              dynamic result =
+                                  await _auth.registerWithEmailAndPassword(
+                                      email: _emailController.text, password: _passwordController.text);
+                              if (result == null) {
+                                setState(() {
+                                  error = 'Please check your details.';
+                                  loading = false;
+                                });
+                              }
                             }
-                          }
-                        }),
+                          }),
+                    ),
                     SizedBox(height: 12.0),
+                    SizedBox(height: 12.0),
+                    ButtonTheme(
+                      minWidth: Get.width * 0.7,
+                      child: RaisedButton(
+                          color: Colors.green[600],
+                          child: Text(
+                            'Sign In now',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            widget.toggleView();
+                          }),
+                    ),
                     Text(
                       error,
                       style: TextStyle(
