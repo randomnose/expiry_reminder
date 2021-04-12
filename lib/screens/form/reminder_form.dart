@@ -1,6 +1,14 @@
+import 'package:expiry_reminder/models/user.dart';
+import 'package:expiry_reminder/services/database.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+// ========================================================
+// TODO: fix the validator
+// ========================================================
 
 class AddNewReminder extends StatefulWidget {
   @override
@@ -9,16 +17,13 @@ class AddNewReminder extends StatefulWidget {
 
 class _AddNewReminder extends State<AddNewReminder> {
   GlobalKey<FormState> _formKey;
-  String productName = '';
   DateTime reminderTime = DateTime.now();
-  String description = '';
 
   String error = '';
   bool hasPickedDate = false;
 
   TextEditingController _nameController;
   TextEditingController _descriptionController;
-
 
   @override
   void initState() {
@@ -38,6 +43,13 @@ class _AddNewReminder extends State<AddNewReminder> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<User>(context);
+
+    CollectionReference reminderCollection = Firestore.instance
+        .collection('appUsers')
+        .document(user.uid)
+        .collection('reminders');
+
     return Scaffold(
         appBar: AppBar(
           title: Text('Create a reminder'),
@@ -76,16 +88,15 @@ class _AddNewReminder extends State<AddNewReminder> {
                   SizedBox(height: 20),
                   TextFormField(
                     controller: _nameController,
-                    validator: (formVal) => formVal.length == 0
-                        ? 'Please enter your product name'
-                        : '',
+                    validator: (formVal) {
+                      if (formVal == null || formVal.isEmpty) {
+                        return 'Product name is needed';
+                      } else {
+                        return null;
+                      }
+                    },
                     decoration:
                         textInputDecoration.copyWith(hintText: 'Product Name'),
-                    onChanged: (value) {
-                      setState(() {
-                        productName = value;
-                      });
-                    },
                   ),
                   TextButton.icon(
                     label: Text('Use the barcode scanner instead   '),
@@ -116,16 +127,15 @@ class _AddNewReminder extends State<AddNewReminder> {
                   SizedBox(height: 20),
                   TextFormField(
                     controller: _descriptionController,
-                    validator: (formVal) => formVal.length == 0
-                        ? 'Please enter your product description'
-                        : '',
+                    validator: (formVal) {
+                      if (formVal == null || formVal.isEmpty) {
+                        return 'Product description is needed';
+                      } else {
+                        return null;
+                      }
+                    },
                     decoration: textInputDecoration.copyWith(
                         hintText: 'Product Description'),
-                    onChanged: (value) {
-                      setState(() {
-                        description = value;
-                      });
-                    },
                   ),
                   SizedBox(height: 20),
                   ButtonTheme(
@@ -135,12 +145,21 @@ class _AddNewReminder extends State<AddNewReminder> {
                     child: RaisedButton(
                       color: Colors.green,
                       child: Text('Create reminder'),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState.validate() &&
-                            reminderTime != null) {
-                          print('all is good!!!!');
+                            hasPickedDate == true) {
+                          reminderCollection.add({
+                            'reminderImage': '',
+                            'reminderName': _nameController.text,
+                            'reminderDate': reminderTime,
+                            'reminderDesc': _descriptionController.text
+                          }).whenComplete(() => Navigator.pop(context));
+                          print('all is good');
                         } else {
                           print('please check ur details');
+                          print(_nameController.text);
+                          print(reminderTime.toString());
+                          print(_descriptionController.text);
                         }
                       },
                     ),

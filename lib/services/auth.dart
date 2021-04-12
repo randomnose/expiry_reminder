@@ -1,6 +1,8 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'database.dart';
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -49,7 +51,7 @@ class AuthService {
       FirebaseUser user = result.user;
 
       // create a new document for user with the particular uid
-      // await DatabaseService(uid: user.uid).updateUserData('0', 'New Member', 100);
+      await DatabaseService(uid: user.uid).updateUserData('New member', user.email);
 
       return _userFromFirebaseUser(user);
     } catch (error) {

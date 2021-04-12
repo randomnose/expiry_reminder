@@ -1,18 +1,19 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:expiry_reminder/models/reminder.dart';
-// import 'package:expiry_reminder/models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expiry_reminder/models/user.dart';
 
-// class DatabaseService {
-//   final String uid;
+class DatabaseService {
+  final String uid;
 
 //   // collection reference
 //   // a reference to a particular collection in FireStore Database
+  final CollectionReference appUserCollection =
+      Firestore.instance.collection('appUsers');
 //   // final CollectionReference expiryReminderCollection =
 //   //     Firestore.instance.collection('testingCollection');
 //   final CollectionReference testingCollection =
 //       Firestore.instance.collection('testingCollection');
 
-//   DatabaseService({this.uid});
+  DatabaseService({this.uid});
 
 //   // Future updateUserData(String name, List<dynamic> reminders) async {
 //   //   return await expiryReminderCollection.document(uid).setData({
@@ -21,11 +22,11 @@
 //   //     'reminders': reminders
 //   //   });
 //   // }
-//   // Future updateUserData(String sugars, String name, int strength) async {
-//   //   return await testingCollection
-//   //       .document(uid)
-//   //       .setData({'sugars': sugars, 'name': name, 'strength': strength});
-//   // }
+  Future updateUserData(String name, String email) async {
+    return await appUserCollection
+        .document(uid)
+        .setData({'name': name, 'email': email});
+  }
 
 //   // // reminder list from snapshot
 //   // List<Reminder> _reminderListFromSnapshot(QuerySnapshot snapshot) {
@@ -68,4 +69,4 @@
 //   //     strength: userData.strength
 //   //   );
 //   // }
-// }
+}

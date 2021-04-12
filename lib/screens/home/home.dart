@@ -1,9 +1,11 @@
+import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/reminder_form.dart';
 import 'package:expiry_reminder/screens/home/reminder_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
 import 'package:get/get.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 /// ========================================================
 /// This is the landing page of the mobile application
 /// ========================================================
@@ -30,6 +32,11 @@ class _HomeState extends State<Home> {
     //         );
     //       });
     // }
+    final user = Provider.of<User>(context);
+    final reminderRef = Firestore.instance
+        .collection('appUsers')
+        .document(user.uid)
+        .collection('reminders');
 
     return Scaffold(
       appBar: AppBar(
@@ -46,13 +53,20 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        itemCount: 1,
-        itemBuilder: (context, index) {
-          return ReminderTile();
-        },
-      ),
+      body: StreamBuilder(
+          stream: reminderRef.snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
+              itemBuilder: (context, index) {
+                return ReminderTile(
+                  reminderTitle: snapshot.data.documents[index].data['reminderName'],
+                  expiryDate: snapshot.data.documents[index].data['reminderDate'].toDate(),
+                );
+              },
+            );
+          }),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.to(() => AddNewReminder()),
         child: Icon(Icons.add),
