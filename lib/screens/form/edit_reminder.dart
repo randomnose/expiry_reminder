@@ -1,3 +1,4 @@
+import 'package:expiry_reminder/screens/home/home.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,17 @@ class _EditReminderState extends State<EditReminder> {
         appBar: AppBar(
           title: Text('Edit a reminder'),
           centerTitle: true,
+          actions: [
+            Padding(
+                padding: EdgeInsets.only(right: 15),
+                child: InkWell(
+                    onTap: () {
+                      widget.docToEdit.reference
+                          .delete()
+                          .whenComplete(() => Get.offAll(Home()));
+                    },
+                    child: Icon(CupertinoIcons.delete)))
+          ],
         ),
         body: GestureDetector(
           onTap: () {
@@ -141,7 +153,7 @@ class _EditReminderState extends State<EditReminder> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Expired? : ${(reminderTime == DateTime.now()) ? 'Yes' : 'No'}',
+                        'Expired? : ${(showDateDifference(reminderTime) <= -1) ? 'Yes' : 'No'}',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -161,10 +173,11 @@ class _EditReminderState extends State<EditReminder> {
                                 'reminderName': _nameController.text,
                                 'reminderDate': reminderTime,
                                 'reminderDesc': _descriptionController.text,
-                                'expiryStatus': (reminderTime == DateTime.now())
-                                    ? 'Yes'
-                                    : 'No'
-                              }).whenComplete(() => Navigator.pop(context));
+                                'expiryStatus':
+                                    (showDateDifference(reminderTime) <= -1)
+                                        ? 'Yes'
+                                        : 'No'
+                              }).whenComplete(() => Get.offAll(Home()));
                               print('all is good');
                             } else {
                               print('please check ur details');
@@ -196,6 +209,13 @@ class _EditReminderState extends State<EditReminder> {
   //     });
   //   }
   // }
+
+  int showDateDifference(DateTime date) {
+    return DateTime(reminderTime.year, reminderTime.month, reminderTime.day)
+        .difference(DateTime(
+            DateTime.now().year, DateTime.now().month, DateTime.now().day))
+        .inDays;
+  }
 
   void _showCupertinoDatePicker(BuildContext context) {
     showCupertinoModalPopup(

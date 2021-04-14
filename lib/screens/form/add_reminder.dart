@@ -1,5 +1,6 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -155,7 +156,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Expired? : ${(reminderTime == DateTime.now() && hasPickedDate == true) ? 'Yes' : 'No'}',
+                        'Expired? : ${(showDateDifference(reminderTime) <= -1 && hasPickedDate == true) ? 'Yes' : 'No'}',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -206,7 +207,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                                 'reminderDate': reminderTime.toLocal(),
                                 'reminderDesc': _descriptionController.text,
                                 'expiryStatus':
-                                    (reminderTime == DateTime.now() &&
+                                    (showDateDifference(reminderTime) <= -1 &&
                                             hasPickedDate == true)
                                         ? 'Yes'
                                         : 'No'
