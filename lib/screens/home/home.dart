@@ -1,11 +1,13 @@
 import 'package:expiry_reminder/models/user.dart';
-import 'package:expiry_reminder/screens/form/reminder_form.dart';
+import 'package:expiry_reminder/screens/form/edit_reminder.dart';
+import 'package:expiry_reminder/screens/form/add_reminder.dart';
 import 'package:expiry_reminder/screens/home/reminder_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+
 /// ========================================================
 /// This is the landing page of the mobile application
 /// ========================================================
@@ -60,9 +62,15 @@ class _HomeState extends State<Home> {
               shrinkWrap: true,
               itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
               itemBuilder: (context, index) {
-                return ReminderTile(
-                  reminderTitle: snapshot.data.documents[index].data['reminderName'],
-                  expiryDate: snapshot.data.documents[index].data['reminderDate'].toDate(),
+                return InkWell(
+                  onTap: () => Get.to(() => EditReminder(docToEdit: snapshot.data.documents[index],)),
+                  child: ReminderTile(
+                    reminderTitle:
+                        snapshot.data.documents[index].data['reminderName'],
+                    expiryDate: snapshot
+                        .data.documents[index].data['reminderDate']
+                        .toDate(),
+                  ),
                 );
               },
             );

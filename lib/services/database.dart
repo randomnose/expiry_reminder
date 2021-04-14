@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expiry_reminder/models/user.dart';
 
 class DatabaseService {
   final String uid;
