@@ -52,7 +52,7 @@ class _EditReminderState extends State<EditReminder> {
                     onTap: () {
                       widget.docToEdit.reference
                           .delete()
-                          .whenComplete(() => Get.offAll(Home()));
+                          .whenComplete(() => Navigator.pop(context));
                     },
                     child: Icon(CupertinoIcons.delete)))
           ],
@@ -177,7 +177,7 @@ class _EditReminderState extends State<EditReminder> {
                                     (showDateDifference(reminderTime) <= -1)
                                         ? 'Yes'
                                         : 'No'
-                              }).whenComplete(() => Get.offAll(Home()));
+                              }).whenComplete(() => Navigator.pop(context));
                               print('all is good');
                             } else {
                               print('please check ur details');

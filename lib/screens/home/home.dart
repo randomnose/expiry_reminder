@@ -7,6 +7,7 @@ import 'package:expiry_reminder/services/auth.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:expandable/expandable.dart';
 
 /// ========================================================
 /// This is the landing page of the mobile application
@@ -55,29 +56,122 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: StreamBuilder(
-          stream: reminderRef.snapshots(),
+
+      // TODO: add reminder category (Not Expired & Expired)
+      // body: StreamBuilder(
+      //     stream: reminderRef.snapshots(),
+      //     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      //       return ListView.builder(
+      //         shrinkWrap: true,
+      //         itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
+      //         itemBuilder: (context, index) {
+      //           return InkWell(
+      //             onTap: () => Get.to(() => EditReminder(
+      //                   docToEdit: snapshot.data.documents[index],
+      //                 )),
+      //             child: ReminderTile(
+      //               reminderTitle:
+      //                   snapshot.data.documents[index].data['reminderName'],
+      //               expiryDate: snapshot
+      //                   .data.documents[index].data['reminderDate']
+      //                   .toDate(),
+      //             ),
+      //           );
+      //         },
+      //       );
+      //     }),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _showAllItems(context, reminderRef.snapshots(), 'All'),
+            _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
+            _showAllItems(context, reminderRef.snapshots(), 'Expired'),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.to(() => AddNewReminder()),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  _showAllItems(BuildContext context, Stream<QuerySnapshot> streamSnapshot,
+      String category) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ExpandablePanel(
+        header: ListTile(
+          leading: CircleAvatar(radius: 25, backgroundColor: Colors.brown[300]),
+          title: category == 'All'
+              ? Text('All Items')
+              : category == 'Fresh'
+                  ? Text('Fresh Items')
+                  : Text('Expired Items'),
+          subtitle: Text('Insert something here.'),
+        ),
+        expanded: StreamBuilder(
+          stream: streamSnapshot,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             return ListView.builder(
               shrinkWrap: true,
               itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
               itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () => Get.to(() => EditReminder(docToEdit: snapshot.data.documents[index],)),
-                  child: ReminderTile(
-                    reminderTitle:
-                        snapshot.data.documents[index].data['reminderName'],
-                    expiryDate: snapshot
-                        .data.documents[index].data['reminderDate']
-                        .toDate(),
-                  ),
-                );
+                if (category == 'All') {
+                  return InkWell(
+                    onTap: () => Get.to(() => EditReminder(
+                          docToEdit: snapshot.data.documents[index],
+                        )),
+                    child: ReminderTile(
+                      reminderTitle:
+                          snapshot.data.documents[index].data['reminderName'],
+                      expiryDate: snapshot
+                          .data.documents[index].data['reminderDate']
+                          .toDate(),
+                    ),
+                  );
+                } else {
+                  if (category == 'Fresh' &&
+                      snapshot.data.documents[index].data['expiryStatus'] ==
+                          'No') {
+                    return InkWell(
+                      onTap: () => Get.to(() => EditReminder(
+                            docToEdit: snapshot.data.documents[index],
+                          )),
+                      child: ReminderTile(
+                        reminderTitle:
+                            snapshot.data.documents[index].data['reminderName'],
+                        expiryDate: snapshot
+                            .data.documents[index].data['reminderDate']
+                            .toDate(),
+                      ),
+                    );
+                  } else {
+                    if (category != 'All' &&
+                        category != 'Fresh' &&
+                        snapshot.data.documents[index].data['expiryStatus'] ==
+                            'Yes') {
+                      return InkWell(
+                        onTap: () => Get.to(() => EditReminder(
+                              docToEdit: snapshot.data.documents[index],
+                            )),
+                        child: ReminderTile(
+                          reminderTitle: snapshot
+                              .data.documents[index].data['reminderName'],
+                          expiryDate: snapshot
+                              .data.documents[index].data['reminderDate']
+                              .toDate(),
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }
+                }
               },
             );
-          }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => AddNewReminder()),
-        child: Icon(Icons.add),
+          },
+        ),
       ),
     );
   }
