@@ -6,8 +6,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
-// ========================================================
-// ========================================================
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class AddNewReminder extends StatefulWidget {
   @override
@@ -113,7 +112,9 @@ class _AddNewReminder extends State<AddNewReminder> {
                       child: TextButton.icon(
                         label: Text('Use the barcode scanner instead'),
                         icon: Icon(CupertinoIcons.qrcode_viewfinder),
-                        onPressed: () {},
+                        onPressed: () {
+                          barcodeScan();
+                        },
                       ),
                     ),
                     TextFormField(
@@ -243,6 +244,17 @@ class _AddNewReminder extends State<AddNewReminder> {
   //     });
   //   }
   // }
+
+  Future barcodeScan() async {
+    var barcodeValue = await FlutterBarcodeScanner.scanBarcode(
+        '#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
+
+    print(barcodeValue);
+    setState(() {
+      _barcodeController.text = barcodeValue;
+    });
+    return barcodeValue;
+  }
 
   void _showCupertinoDatePicker(BuildContext context) {
     showCupertinoModalPopup(
