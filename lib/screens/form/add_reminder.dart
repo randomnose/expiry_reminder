@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
@@ -7,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:http/http.dart' as http;
 
 class AddNewReminder extends StatefulWidget {
   @override
@@ -249,12 +252,46 @@ class _AddNewReminder extends State<AddNewReminder> {
     var barcodeValue = await FlutterBarcodeScanner.scanBarcode(
         '#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
 
-    print(barcodeValue);
+    // use upcdatabase.org to find the product info
+    // EXAMPLE: https://api.upcdatabase.org/product/8000380004881?apikey=4653186551EF1AA505DE0EC0CEB509C0
+
+    // print(barcodeValue);
     setState(() {
       _barcodeController.text = barcodeValue;
     });
+    print("Latest barcode controller text is ->" + _barcodeController.text);
+    _getProductInfoFromApi();
     return barcodeValue;
   }
+
+  // TODO: this function is not getting latest _barcodeController.text
+  Future _getProductInfoFromApi() async {
+    try {
+      print('The barcode getting from getproductinfo api is -> ' +
+          _barcodeController.text);
+
+      var result = await http.get(
+          "https://api.upcdatabase.org/product/${_barcodeController.text}?apikey=4653186551EF1AA505DE0EC0CEB509C0");
+
+      Map<String, dynamic> productData =
+          new Map<String, dynamic>.from(json.decode(result.body));
+
+      print(productData);
+
+      return productData;
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  // Future _productName(dynamic productJson) async {
+  //   await new Future.delayed(const Duration(seconds: 5));
+  //   setState(() {
+  //     _nameController.text = productJson['title'];
+  //   });
+
+  //   print("Latest product name is ->>>" + _nameController.text);
+  // }
 
   void _showCupertinoDatePicker(BuildContext context) {
     showCupertinoModalPopup(
