@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:http/http.dart' as http;
 
+// TODO: allow user to add quantity for their entry of reminders.
 class AddNewReminder extends StatefulWidget {
   @override
   _AddNewReminder createState() => _AddNewReminder();
@@ -259,39 +260,59 @@ class _AddNewReminder extends State<AddNewReminder> {
     setState(() {
       _barcodeController.text = barcodeValue;
     });
+    print("==============================================================");
     print("Latest barcode controller text is ->" + _barcodeController.text);
-    _getProductInfoFromApi();
+    _getProductInfoFromAPI();
     return barcodeValue;
   }
 
   // TODO: this function is not getting latest _barcodeController.text
-  Future _getProductInfoFromApi() async {
+  Future _getProductInfoFromAPI() async {
     try {
-      print('The barcode getting from getproductinfo api is -> ' +
+      print('The barcode getting from _getProductInfoAPI is -> ' +
           _barcodeController.text);
 
       var result = await http.get(
           "https://api.upcdatabase.org/product/${_barcodeController.text}?apikey=4653186551EF1AA505DE0EC0CEB509C0");
-
       Map<String, dynamic> productData =
           new Map<String, dynamic>.from(json.decode(result.body));
 
       print(productData);
-
-      return productData;
+      productData['success'] == true
+          ? _updateProductInfo(productData)
+          : showDialog(
+              context: context,
+              builder: (BuildContext context) => CupertinoAlertDialog(
+                    title: Text('Alert'),
+                    content:
+                        Text('No product could be found with that barcode.'),
+                    actions: [
+                      CupertinoDialogAction(
+                        isDefaultAction: true,
+                        child: Text('Confirm'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      )
+                    ],
+                  ));
     } catch (e) {
       print(e.toString());
     }
   }
 
-  // Future _productName(dynamic productJson) async {
-  //   await new Future.delayed(const Duration(seconds: 5));
-  //   setState(() {
-  //     _nameController.text = productJson['title'];
-  //   });
+  Future _updateProductInfo(dynamic productJson) async {
+    // might not need this delay anymore
+    await new Future.delayed(const Duration(seconds: 3));
+    setState(() {
+      _nameController.text = productJson['title'];
+      _descriptionController.text =
+          productJson['description'] ?? _descriptionController.text;
+    });
 
-  //   print("Latest product name is ->>>" + _nameController.text);
-  // }
+    print("Latest product name is ->>>" + _nameController.text);
+    print("==============================================================");
+  }
 
   void _showCupertinoDatePicker(BuildContext context) {
     showCupertinoModalPopup(
