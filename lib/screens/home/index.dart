@@ -1,8 +1,11 @@
+import 'package:expiry_reminder/screens/form/add_reminder.dart';
 import 'package:expiry_reminder/screens/home/home.dart';
+import 'package:expiry_reminder/screens/home/settings.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
+import 'package:get/get.dart';
 
 /// ========================================================
 /// This is the landing page of the mobile application
@@ -16,7 +19,7 @@ class IndexPageState extends State<IndexPage> {
   final AuthService _auth = AuthService();
 
   int _currentIndex = 0;
-  final tabs = [Home(), Center(child: Text('Settings'))];
+  final tabs = [Home(), Settings()];
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +38,13 @@ class IndexPageState extends State<IndexPage> {
         ),
       ),
       body: tabs[_currentIndex],
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton(
+              onPressed: () => Get.to(() => AddNewReminder()),
+              child: Center(child: Icon(CupertinoIcons.add)),
+              backgroundColor: appButtonBrown,
+            )
+          : Container(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         backgroundColor: appBgGrey,
@@ -44,7 +54,7 @@ class IndexPageState extends State<IndexPage> {
         unselectedFontSize: 14,
         items: [
           BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.doc), label: 'Reminders'),
+              icon: Icon(CupertinoIcons.list_number), label: 'Reminders'),
           BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.settings), label: 'Settings')
         ],

@@ -56,9 +56,13 @@ class _AddNewReminder extends State<AddNewReminder> {
         .collection('reminders');
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Create a reminder'),
-          centerTitle: true,
+        appBar: CupertinoNavigationBar(
+          actionsForegroundColor: Colors.black,
+          backgroundColor: appGreen,
+          middle: Text(
+            'Add a Reminder',
+            style: TextStyle(fontSize: 20),
+          ),
         ),
         body: GestureDetector(
           onTap: () {

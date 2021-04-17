@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
-const textInputDecoration = InputDecoration(
-  fillColor: Colors.white,
-  filled: true,
-  contentPadding: EdgeInsets.all(12.0),
-  enabledBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: Colors.grey, width: 2.0),
-  ),
+InputDecoration textInputDecoration = InputDecoration(
+  border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: BorderSide(color: Colors.red)),
+  floatingLabelBehavior: FloatingLabelBehavior.always,
   focusedBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: Colors.green, width: 2.0),
-  ),
+      borderRadius: BorderRadius.circular(15),
+      borderSide: BorderSide(color: Colors.black)),
+  alignLabelWithHint: true,
 );
 
 const eRNormalText =

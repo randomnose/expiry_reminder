@@ -1,4 +1,3 @@
-import 'package:expiry_reminder/screens/home/home.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -42,21 +41,21 @@ class _EditReminderState extends State<EditReminder> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Edit a reminder'),
-          centerTitle: true,
-          actions: [
-            Padding(
-                padding: EdgeInsets.only(right: 15),
-                child: InkWell(
-                    onTap: () {
-                      widget.docToEdit.reference
-                          .delete()
-                          .whenComplete(() => Navigator.pop(context));
-                    },
-                    child: Icon(CupertinoIcons.delete)))
-          ],
-        ),
+        appBar: CupertinoNavigationBar(
+          actionsForegroundColor: Colors.black,
+          backgroundColor: appGreen,
+          middle: Text(
+            'Edit a Reminder',
+            style: TextStyle(fontSize: 20),
+          ),
+          trailing: TextButton(
+              onPressed: () {
+                widget.docToEdit.reference
+                    .delete()
+                    .whenComplete(() => Navigator.pop(context));
+              },
+              child: Text('Delete', style: TextStyle(color: CupertinoColors.systemRed),),
+        )),
         body: GestureDetector(
           onTap: () {
             FocusScope.of(context).requestFocus(new FocusNode());

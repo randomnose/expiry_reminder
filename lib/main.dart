@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
         // key: Get.key,
         debugShowCheckedModeBanner: false,
         home: Wrapper(),
+        theme: ThemeData(primaryColor: Colors.black),
       ),
     );
   }

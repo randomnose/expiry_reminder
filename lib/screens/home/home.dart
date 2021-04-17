@@ -1,11 +1,9 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/edit_reminder.dart';
-import 'package:expiry_reminder/screens/form/add_reminder.dart';
-import 'package:expiry_reminder/screens/home/reminder_tile.dart';
+import 'package:expiry_reminder/shared/reminder_tile.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:expiry_reminder/services/auth.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +15,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final AuthService _auth = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -40,54 +37,14 @@ class _HomeState extends State<Home> {
         .document(user.uid)
         .collection('reminders');
 
-    return Scaffold(
-      backgroundColor: appBgGrey,
-      // appBar: CupertinoNavigationBar(
-      //   backgroundColor: appGreen,
-      //   middle: Text(
-      //     'Expiry Reminder',
-      //     style: TextStyle(fontSize: 20),
-      //   ),
-      //   trailing: TextButton(
-      //     child: Text('Log out', style: TextStyle(color: Colors.white)),
-      //     onPressed: () async {
-      //       await _auth.signOut();
-      //     },
-      //   ),
-      // ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _showAllItems(context, reminderRef.snapshots(), 'All'),
-            _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
-            _showAllItems(context, reminderRef.snapshots(), 'Expired'),
-          ],
-        ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _showAllItems(context, reminderRef.snapshots(), 'All'),
+          _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
+          _showAllItems(context, reminderRef.snapshots(), 'Expired'),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => AddNewReminder()),
-        child: Center(child: Icon(CupertinoIcons.add)),
-        backgroundColor: appButtonBrown,
-      ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   currentIndex: _currentIndex,
-      //   backgroundColor: appBgGrey,
-      //   selectedItemColor: CupertinoColors.black,
-      //   unselectedItemColor: appGreen,
-      //   selectedFontSize: 17,
-      //   unselectedFontSize: 14,
-      //   items: [
-      //     BottomNavigationBarItem(
-      //         icon: Icon(CupertinoIcons.doc), label: 'Reminders'),
-      //     BottomNavigationBarItem(
-      //         icon: Icon(CupertinoIcons.settings), label: 'Settings')
-      //   ],
-      //   onTap: (index) {
-      //     setState(() {
-      //       _currentIndex = index;
-      //     });
-      //   },
-      // ),
     );
   }
 
@@ -118,7 +75,7 @@ class _HomeState extends State<Home> {
                             color: appRed,
                             fontWeight: FontWeight.bold,
                             fontSize: 20)),
-            subtitle: Text('Insert something here.'),
+            // subtitle: Text(length.toString()),
           ),
           expanded: StreamBuilder(
             stream: streamSnapshot,
