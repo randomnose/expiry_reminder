@@ -47,10 +47,8 @@ class _SignInState extends State<SignIn> {
     return loading
         ? Loading()
         : Scaffold(
-            backgroundColor: Colors.brown[100],
             appBar: AppBar(
-              backgroundColor: Colors.brown[400],
-              elevation: 0.0,
+              backgroundColor: appGreen,
               title: Text('Expiry Reminder - Sign In now'),
               // actions: <Widget>[
               //   FlatButton.icon(
@@ -61,7 +59,12 @@ class _SignInState extends State<SignIn> {
               // ],
             ),
             body: Container(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('assets/plant.jpg'),
+                      fit: BoxFit.cover)),
               width: Get.width,
+              height: Get.height,
               padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
               child: Form(
                 key: _formKey,

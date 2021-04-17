@@ -250,23 +250,29 @@ class _AddNewReminder extends State<AddNewReminder> {
   // }
 
   Future barcodeScan() async {
-    var barcodeValue = await FlutterBarcodeScanner.scanBarcode(
-        '#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
+    try {
+      var barcodeValue = await FlutterBarcodeScanner.scanBarcode(
+          '#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
 
-    // use upcdatabase.org to find the product info
-    // EXAMPLE: https://api.upcdatabase.org/product/8000380004881?apikey=4653186551EF1AA505DE0EC0CEB509C0
+      // use upcdatabase.org to find the product info
+      // EXAMPLE: https://api.upcdatabase.org/product/8000380004881?apikey=4653186551EF1AA505DE0EC0CEB509C0
 
-    // print(barcodeValue);
-    setState(() {
-      _barcodeController.text = barcodeValue;
-    });
-    print("==============================================================");
-    print("Latest barcode controller text is ->" + _barcodeController.text);
-    _getProductInfoFromAPI();
-    return barcodeValue;
+      if (barcodeValue == '-1') {
+        print('User cancelled using the barcode reader');
+      } else {
+        setState(() {
+          _barcodeController.text = barcodeValue;
+        });
+        print("==============================================================");
+        print("Latest barcode controller text is ->" + _barcodeController.text);
+        _getProductInfoFromAPI();
+      }
+      return barcodeValue;
+    } on Exception catch (e) {
+      print(e.toString());
+    }
   }
 
-  // TODO: this function is not getting latest _barcodeController.text
   Future _getProductInfoFromAPI() async {
     try {
       print('The barcode getting from _getProductInfoAPI is -> ' +
@@ -303,7 +309,7 @@ class _AddNewReminder extends State<AddNewReminder> {
 
   Future _updateProductInfo(dynamic productJson) async {
     // might not need this delay anymore
-    await new Future.delayed(const Duration(seconds: 3));
+    // await new Future.delayed(const Duration(seconds: 3));
     setState(() {
       _nameController.text = productJson['title'];
       _descriptionController.text =

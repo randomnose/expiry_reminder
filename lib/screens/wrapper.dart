@@ -1,8 +1,8 @@
 import 'package:expiry_reminder/models/user.dart';
+import 'package:expiry_reminder/screens/home/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'authenticate/authenticate.dart';
-import 'home/home.dart';
 
 class Wrapper extends StatelessWidget {
   @override
@@ -16,7 +16,7 @@ class Wrapper extends StatelessWidget {
     if (user == null) {
       return Authenticate();
     } else {
-      return Home();
+      return IndexPage();
     }
   }
 }

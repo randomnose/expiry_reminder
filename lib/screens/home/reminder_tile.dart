@@ -16,9 +16,8 @@ class _ReminderTileState extends State<ReminderTile> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 10),
+      padding: EdgeInsets.fromLTRB(15, 0, 15, 10),
       child: Card(
-        margin: EdgeInsets.fromLTRB(20, 6, 20, 0),
         child: ListTile(
           leading: CircleAvatar(radius: 25, backgroundColor: Colors.brown[300]),
           title: Text(
