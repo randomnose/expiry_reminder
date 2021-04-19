@@ -48,19 +48,7 @@ class _SignInState extends State<SignIn> {
     return loading
         ? Loading()
         : Scaffold(
-            backgroundColor: appGreen,
-            // TODO: change ui to suggested look
-            // appBar: AppBar(
-            //   backgroundColor: appGreen,
-            //   title: Text('Expiry Reminder - Sign In now'),
-            //   // actions: <Widget>[
-            //   //   FlatButton.icon(
-            //   //     icon: Icon(Icons.app_registration),
-            //   //     label: Text('Register Now'),
-            //   //     onPressed: () => widget.toggleView(),
-            //   //   ),
-            //   // ],
-            // ),
+            backgroundColor: appSignInBgGreen,
             body: GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(new FocusNode());
@@ -69,16 +57,15 @@ class _SignInState extends State<SignIn> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Padding(
                         padding: EdgeInsets.only(top: 100),
-                        // TODO: put logo here
-                        child: Text('ER',
-                            style: TextStyle(
-                                fontSize: 100,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold)),
+                        child: Image.asset('assets/logo_no_name.png'),
+                        //   Text('ER',
+                        //       style: TextStyle(
+                        //           fontSize: 100,
+                        //           color: Colors.white,
+                        //           fontWeight: FontWeight.bold)),
                       ),
                       Form(
                         key: _formKey,
@@ -114,13 +101,11 @@ class _SignInState extends State<SignIn> {
                               minWidth: Get.width * 0.6,
                               height: 40,
                               child: RaisedButton(
-                                shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(20)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        new BorderRadius.circular(20)),
                                 color: appButtonBrown,
-                                child: Text(
-                                  'LOGIN',
-                                  style:
-                                      TextStyle(color: appBgGrey, fontSize: 16),
-                                ),
+                                child: Text('LOGIN', style: whiteTextStyle),
                                 onPressed: () async {
                                   if (_formKey.currentState.validate()) {
                                     setState(() {
@@ -133,7 +118,7 @@ class _SignInState extends State<SignIn> {
                                     if (result == null) {
                                       setState(() {
                                         error =
-                                            'Could not sign in with those credentials!';
+                                            'Error: \n Could not sign in with those credentials!';
                                         loading = false;
                                       });
                                     }
@@ -143,11 +128,15 @@ class _SignInState extends State<SignIn> {
                                 },
                               ),
                             ),
+                            SizedBox(height: 15),
+                            Divider(
+                                height: 10,
+                                color: CupertinoColors.separator,
+                                thickness: 0.7),
                             TextButton(
                                 child: Text(
                                   'REGISTER NOW',
-                                  style: TextStyle(
-                                      color: appBgGrey, fontSize: 16),
+                                  style: whiteTextStyle,
                                 ),
                                 onPressed: () {
                                   widget.toggleView();
@@ -155,10 +144,7 @@ class _SignInState extends State<SignIn> {
                             SizedBox(height: 20),
                             Text(
                               error,
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: CupertinoColors.activeOrange,
-                                  fontWeight: FontWeight.bold),
+                              style: errorTextStyle,
                               textAlign: TextAlign.center,
                             ),
                           ],

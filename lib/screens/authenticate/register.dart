@@ -1,5 +1,6 @@
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/loading.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
 import 'package:get/get.dart';
@@ -47,95 +48,104 @@ class _RegisterState extends State<Register> {
         ? Loading()
         : Scaffold(
             backgroundColor: Colors.blueGrey[100],
-            appBar: AppBar(
-              backgroundColor: appGreen,
-              title: Text('Expiry Reminder - Sign up now'),
-              // actions: <Widget>[
-              //   FlatButton.icon(
-              //     icon: Icon(Icons.login),
-              //     label: Text('Sign In'),
-              //     onPressed: () => widget.toggleView(),
-              //   ),
-              // ],
-            ),
-            body: Container(
-              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(height: 20.0),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration:
-                          textInputDecoration.copyWith(hintText: 'Email'),
-                      validator: (val) => val.isEmpty ? 'Enter an email' : null,
-                      onChanged: (val) {
-                        setState(() => email = val);
-                      },
-                    ),
-                    SizedBox(height: 20.0),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration:
-                          textInputDecoration.copyWith(hintText: 'Password'),
-                      obscureText: true,
-                      validator: (val) => val.length < 6
-                          ? 'Enter a password 6+ chars long'
-                          : null,
-                      onChanged: (val) {
-                        setState(() => password = val);
-                      },
-                    ),
-                    SizedBox(height: 20.0),
-                    ButtonTheme(
-                      minWidth: Get.width * 0.7,
-                      child: RaisedButton(
-                          color: Colors.pink[400],
-                          child: Text(
-                            'Register',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          onPressed: () async {
-                            if (_formKey.currentState.validate()) {
-                              setState(() {
-                                loading = true;
-                              });
-                              dynamic result =
-                                  await _auth.registerWithEmailAndPassword(
-                                      email: _emailController.text, password: _passwordController.text);
-                              if (result == null) {
-                                setState(() {
-                                  error = 'Please check your details.';
-                                  loading = false;
-                                });
-                              }
-                            }
-                          }),
-                    ),
-                    SizedBox(height: 12.0),
-                    SizedBox(height: 12.0),
-                    ButtonTheme(
-                      minWidth: Get.width * 0.7,
-                      child: RaisedButton(
-                          color: Colors.green[600],
-                          child: Text(
-                            'Sign In now',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          onPressed: () {
-                            widget.toggleView();
-                          }),
-                    ),
-                    Text(
-                      error,
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    )
-                  ],
+            body: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).requestFocus(new FocusNode());
+              },
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: 100),
+                        child: Image.asset('assets/logo_no_name.png'),
+                      ),
+                      Text('Account Registration',
+                          style: errorTextStyle.copyWith(color: appButtonBrown, fontWeight: FontWeight.bold)),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(height: 20.0),
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: textInputDecoration.copyWith(
+                                  hintText: 'Email'),
+                              validator: (val) =>
+                                  val.isEmpty ? 'Enter an email' : null,
+                              onChanged: (val) {
+                                setState(() => email = val);
+                              },
+                            ),
+                            SizedBox(height: 20.0),
+                            TextFormField(
+                              controller: _passwordController,
+                              decoration: textInputDecoration.copyWith(
+                                  hintText: 'Password'),
+                              obscureText: true,
+                              validator: (val) => val.length < 6
+                                  ? 'Enter a password 6+ chars long'
+                                  : null,
+                              onChanged: (val) {
+                                setState(() => password = val);
+                              },
+                            ),
+                            SizedBox(height: 20.0),
+                            ButtonTheme(
+                              minWidth: Get.width * 0.6,
+                              height: 40,
+                              child: RaisedButton(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(20)),
+                                  color: appGreen,
+                                  child: Text(
+                                    'REGISTER',
+                                    style: whiteTextStyle,
+                                  ),
+                                  onPressed: () async {
+                                    if (_formKey.currentState.validate()) {
+                                      setState(() {
+                                        loading = true;
+                                      });
+                                      dynamic result = await _auth
+                                          .registerWithEmailAndPassword(
+                                              email: _emailController.text,
+                                              password:
+                                                  _passwordController.text);
+                                      if (result == null) {
+                                        setState(() {
+                                          error = 'Error: \n Please check your details.';
+                                          loading = false;
+                                        });
+                                      }
+                                    }
+                                  }),
+                            ),
+                            SizedBox(height: 15),
+                            Divider(
+                                height: 10,
+                                color: CupertinoColors.separator,
+                                thickness: 0.7),
+                            TextButton(
+                                child: Text(
+                                  'LOGIN INSTEAD',
+                                  style: greenTextStyle,
+                                ),
+                                onPressed: () {
+                                  widget.toggleView();
+                                }),
+                            Text(
+                              error,
+                              style: errorTextStyle,
+                              textAlign: TextAlign.center,
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -42,20 +43,23 @@ class _EditReminderState extends State<EditReminder> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CupertinoNavigationBar(
-          actionsForegroundColor: Colors.black,
-          backgroundColor: appGreen,
-          middle: Text(
-            'Edit a Reminder',
-            style: TextStyle(fontSize: 20),
-          ),
-          trailing: TextButton(
-              onPressed: () {
-                widget.docToEdit.reference
-                    .delete()
-                    .whenComplete(() => Navigator.pop(context));
-              },
-              child: Text('Delete', style: TextStyle(color: CupertinoColors.systemRed),),
-        )),
+            actionsForegroundColor: Colors.black,
+            backgroundColor: appGreen,
+            middle: Text(
+              'Edit a Reminder',
+              style: TextStyle(fontSize: 20),
+            ),
+            trailing: Material(
+              color: appGreen,
+              child: IconButton(
+                icon: Icon(CupertinoIcons.trash),
+                onPressed: () {
+                  widget.docToEdit.reference
+                      .delete()
+                      .whenComplete(() => Navigator.pop(context));
+                },
+              ),
+            )),
         body: GestureDetector(
           onTap: () {
             FocusScope.of(context).requestFocus(new FocusNode());
@@ -209,12 +213,12 @@ class _EditReminderState extends State<EditReminder> {
   //   }
   // }
 
-  int showDateDifference(DateTime date) {
-    return DateTime(reminderTime.year, reminderTime.month, reminderTime.day)
-        .difference(DateTime(
-            DateTime.now().year, DateTime.now().month, DateTime.now().day))
-        .inDays;
-  }
+  // int showDateDifference(DateTime date) {
+  //   return DateTime(reminderTime.year, reminderTime.month, reminderTime.day)
+  //       .difference(DateTime(
+  //           DateTime.now().year, DateTime.now().month, DateTime.now().day))
+  //       .inDays;
+  // }
 
   void _showCupertinoDatePicker(BuildContext context) {
     showCupertinoModalPopup(
