@@ -4,22 +4,13 @@ InputDecoration textInputDecoration = InputDecoration(
   border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(20),
       borderSide: BorderSide(color: Colors.black)),
-  // enabledBorder: OutlineInputBorder(
-  //     borderRadius: BorderRadius.circular(20),
-  //     borderSide: BorderSide(color: Colors.black)),
   labelStyle: TextStyle(color: Colors.black),
   floatingLabelBehavior: FloatingLabelBehavior.always,
   focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(30),
-      borderSide: BorderSide(color: Colors.white)),
+      borderSide: BorderSide(color: Colors.black)),
   alignLabelWithHint: true,
 );
-
-// TextStyle eRNormalText =
-//     TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black);
-
-// TextStyle eRWarningText =
-//     TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red);
 
 TextStyle whiteTextStyle = TextStyle(fontSize: 16, color: appBgGrey);
 TextStyle greenTextStyle = TextStyle(fontSize: 16, color: appBottomNavGreen);

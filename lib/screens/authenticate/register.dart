@@ -3,6 +3,7 @@ import 'package:expiry_reminder/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class Register extends StatefulWidget {
@@ -62,7 +63,9 @@ class _RegisterState extends State<Register> {
                         child: Image.asset('assets/logo_no_name.png'),
                       ),
                       Text('Account Registration',
-                          style: errorTextStyle.copyWith(color: appButtonBrown, fontWeight: FontWeight.bold)),
+                          style: errorTextStyle.copyWith(
+                              color: appButtonBrown,
+                              fontWeight: FontWeight.bold)),
                       Form(
                         key: _formKey,
                         child: Column(
@@ -71,18 +74,26 @@ class _RegisterState extends State<Register> {
                             TextFormField(
                               controller: _emailController,
                               decoration: textInputDecoration.copyWith(
-                                  hintText: 'Email'),
+                                  hintText: 'Email',
+                                  labelText: 'Email',
+                                  prefixIcon: Icon(Icons.email_outlined)),
                               validator: (val) =>
                                   val.isEmpty ? 'Enter an email' : null,
                               onChanged: (val) {
                                 setState(() => email = val);
                               },
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(
+                                    new RegExp(r"\s\b|\b\s"))
+                              ],
                             ),
                             SizedBox(height: 20.0),
                             TextFormField(
                               controller: _passwordController,
                               decoration: textInputDecoration.copyWith(
-                                  hintText: 'Password'),
+                                  hintText: 'Password',
+                                  labelText: 'Password',
+                                  prefixIcon: Icon(CupertinoIcons.lock)),
                               obscureText: true,
                               validator: (val) => val.length < 6
                                   ? 'Enter a password 6+ chars long'
@@ -116,7 +127,8 @@ class _RegisterState extends State<Register> {
                                                   _passwordController.text);
                                       if (result == null) {
                                         setState(() {
-                                          error = 'Error: \n Please check your details.';
+                                          error =
+                                              'Error: \n Please check your details.';
                                           loading = false;
                                         });
                                       }

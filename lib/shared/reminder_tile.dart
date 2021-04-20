@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
-// TODO: add properties for reminder tile
-// so that it can be passed into the add reminder form.
 class ReminderTile extends StatefulWidget {
   final String reminderTitle;
-  final DateTime expiryDate;
+  final String expiryDate;
 
   const ReminderTile({Key key, this.reminderTitle, this.expiryDate}) : super(key: key);
 
@@ -24,7 +22,7 @@ class _ReminderTileState extends State<ReminderTile> {
             widget.reminderTitle,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: Text(widget.expiryDate.toString()),
+          subtitle: Text(widget.expiryDate),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class EditReminder extends StatefulWidget {
   final dynamic docToEdit;
@@ -19,7 +20,11 @@ class _EditReminderState extends State<EditReminder> {
   TextEditingController _descriptionController = TextEditingController();
   TextEditingController _barcodeController = TextEditingController();
   DateTime reminderTime;
+  DateTime expiryDate;
 
+  final dateFormat = new DateFormat.yMMMMEEEEd();
+  final remindDateFormat = new DateFormat.jms();
+  String error = '';
   @override
   void initState() {
     _formKey = GlobalKey<FormState>();
@@ -30,6 +35,7 @@ class _EditReminderState extends State<EditReminder> {
     _barcodeController =
         TextEditingController(text: widget.docToEdit.data['productBarcode']);
     reminderTime = widget.docToEdit.data['reminderDate'].toDate();
+    expiryDate = widget.docToEdit.data['expiryDate'].toDate();
     super.initState();
   }
 
@@ -102,23 +108,16 @@ class _EditReminderState extends State<EditReminder> {
                         }
                       },
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Name'),
+                          hintText: 'Product Name', labelText: 'Product Name'),
                     ),
                     SizedBox(height: 20),
                     TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _barcodeController,
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Barcode'),
+                          hintText: 'Product Barcode', labelText: 'Product Barcode'),
                     ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        label: Text('Use the barcode scanner instead'),
-                        icon: Icon(CupertinoIcons.qrcode_viewfinder),
-                        onPressed: () {},
-                      ),
-                    ),
+                    SizedBox(height: 20),
                     TextFormField(
                       controller: _descriptionController,
                       validator: (formVal) {
@@ -129,7 +128,7 @@ class _EditReminderState extends State<EditReminder> {
                         }
                       },
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Description (mark "-" if none)'),
+                          hintText: 'Product Description (mark "-" if none)', labelText: 'Product Description'),
                     ),
                     SizedBox(height: 20),
                     Align(
@@ -141,13 +140,35 @@ class _EditReminderState extends State<EditReminder> {
                     Row(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Text(reminderTime.toString()),
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Text(dateFormat.format(reminderTime) +
+                              ', ' +
+                              remindDateFormat.format(reminderTime)),
                         ),
                         InkWell(
                           child: Icon(CupertinoIcons.calendar),
                           onTap: () {
-                            _showCupertinoDatePicker(context);
+                            _pickReminderTime(context);
+                          },
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Expiry Date:',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ),
+                    Row(
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.only(right: 8.0),
+                            child: Text(dateFormat.format(expiryDate))),
+                        InkWell(
+                          child: Icon(CupertinoIcons.calendar),
+                          onTap: () {
+                            _pickExpiryDate(context);
                           },
                         )
                       ],
@@ -156,7 +177,7 @@ class _EditReminderState extends State<EditReminder> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Expired? : ${(showDateDifference(reminderTime) <= -1) ? 'Yes' : 'No'}',
+                        'Expired? : ${(showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No'}',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -174,21 +195,32 @@ class _EditReminderState extends State<EditReminder> {
                                         ? ''
                                         : _barcodeController.text.toString(),
                                 'reminderName': _nameController.text,
-                                'reminderDate': reminderTime,
+                                'reminderDate': reminderTime.toLocal(),
                                 'reminderDesc': _descriptionController.text,
-                                'expiryStatus':
-                                    (showDateDifference(reminderTime) <= -1)
+                                'isExpired':
+                                    (showDateDifference(expiryDate) <= 0)
                                         ? 'Yes'
-                                        : 'No'
+                                        : 'No',
+                                'expiryDate': expiryDate.toLocal()
                               }).whenComplete(() => Navigator.pop(context));
                               print('all is good');
                             } else {
+                              setState(() {
+                                error =
+                                    'Please check that you have entered all details.';
+                              });
                               print('please check ur details');
                               print(_nameController.text);
                               print(reminderTime.toString());
                               print(_descriptionController.text);
                             }
                           }),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      error,
+                      style: errorTextStyle,
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -198,29 +230,7 @@ class _EditReminderState extends State<EditReminder> {
         ));
   }
 
-  // // a future function that will open up the date picker
-  // Future _showDatePicker(BuildContext context) async {
-  //   final DateTime datePicked = await showDatePicker(
-  //       context: context,
-  //       initialDate: reminderTime,
-  //       firstDate: DateTime(2021),
-  //       lastDate: DateTime(2025));
-
-  //   if (datePicked != null && datePicked != DateTime.now()) {
-  //     setState(() {
-  //       reminderTime = datePicked;
-  //     });
-  //   }
-  // }
-
-  // int showDateDifference(DateTime date) {
-  //   return DateTime(reminderTime.year, reminderTime.month, reminderTime.day)
-  //       .difference(DateTime(
-  //           DateTime.now().year, DateTime.now().month, DateTime.now().day))
-  //       .inDays;
-  // }
-
-  void _showCupertinoDatePicker(BuildContext context) {
+  void _pickReminderTime(BuildContext context) {
     showCupertinoModalPopup(
         context: context,
         builder: (_) => Container(
@@ -236,6 +246,40 @@ class _EditReminderState extends State<EditReminder> {
                       onDateTimeChanged: (changedDate) {
                         setState(() {
                           reminderTime = changedDate;
+                        });
+                      },
+                    ),
+                  ),
+                  CupertinoButton(
+                      child: Text(
+                        'Confirm',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      })
+                ],
+              ),
+            ));
+  }
+
+  void _pickExpiryDate(BuildContext context) {
+    showCupertinoModalPopup(
+        context: context,
+        builder: (_) => Container(
+              height: 500,
+              color: Colors.white,
+              child: Column(
+                children: [
+                  Container(
+                    height: 400,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: expiryDate,
+                      onDateTimeChanged: (changedDate) {
+                        setState(() {
+                          expiryDate = changedDate;
                         });
                       },
                     ),

@@ -10,6 +10,19 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     return Column(children: [
       Text('Settings page'),
+      // final user = Provider.of<User>(context);
+      // final userName = DatabaseService(user.uid).
+
+      // void _showSettingsPanel() {
+      //   showModalBottomSheet(
+      //       context: context,
+      //       builder: (context) {
+      //         return Container(
+      //           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+      //           child: SettingsForm(),
+      //         );
+      //       });
+      // }
     ]);
   }
 }

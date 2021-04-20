@@ -3,6 +3,7 @@ import 'package:expiry_reminder/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:expiry_reminder/services/auth.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class SignIn extends StatefulWidget {
@@ -76,18 +77,26 @@ class _SignInState extends State<SignIn> {
                               controller: _emailController,
                               decoration: textInputDecoration.copyWith(
                                   hintText: 'Email Address',
-                                  labelText: 'Email'),
+                                  labelText: 'Email',
+                                  prefixIcon: Icon(Icons.email_outlined)),
                               validator: (formVal) =>
                                   formVal.isEmpty ? 'Enter an email' : null,
                               onChanged: (val) {
                                 setState(() => email = val);
                               },
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(
+                                    new RegExp(r"\s\b|\b\s"))
+                              ],
                             ),
                             SizedBox(height: 20.0),
+                            // TODO: add prefix icon
                             TextFormField(
                               controller: _passwordController,
                               decoration: textInputDecoration.copyWith(
-                                  hintText: 'Password', labelText: 'Password'),
+                                  hintText: 'Password',
+                                  labelText: 'Password',
+                                  prefixIcon: Icon(CupertinoIcons.lock)),
                               validator: (formVal) => formVal.length < 6
                                   ? 'Enter a password longer than 6 characters'
                                   : null,

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 // TODO: allow user to add quantity for their entry of reminders.
 class AddNewReminder extends StatefulWidget {
@@ -20,9 +21,13 @@ class AddNewReminder extends StatefulWidget {
 class _AddNewReminder extends State<AddNewReminder> {
   GlobalKey<FormState> _formKey;
   DateTime reminderTime = DateTime.now().toLocal();
+  DateTime expiryDate = DateTime.now().toLocal();
 
+  final dateFormat = new DateFormat.yMMMMEEEEd();
+  final remindDateFormat = new DateFormat.jms();
   String error = '';
   bool hasPickedDate = false;
+  bool hasPickedExpiry = false;
 
   TextEditingController _nameController;
   TextEditingController _descriptionController;
@@ -106,14 +111,15 @@ class _AddNewReminder extends State<AddNewReminder> {
                         }
                       },
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Name'),
+                          hintText: 'Product Name', labelText: 'Product Name'),
                     ),
                     SizedBox(height: 20),
                     TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _barcodeController,
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Barcode'),
+                          hintText: 'Product Barcode',
+                          labelText: 'Product Barcode'),
                     ),
                     Align(
                       alignment: Alignment.centerLeft,
@@ -135,7 +141,8 @@ class _AddNewReminder extends State<AddNewReminder> {
                         }
                       },
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Description (mark "-" if none)'),
+                          hintText: 'Product Description (mark "-" if none)',
+                          labelText: 'Product Description'),
                     ),
                     SizedBox(height: 20),
                     Align(
@@ -147,15 +154,17 @@ class _AddNewReminder extends State<AddNewReminder> {
                     Row(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
+                          padding: EdgeInsets.only(right: 8.0),
                           child: Text(hasPickedDate
-                              ? reminderTime.toString()
+                              ? dateFormat.format(reminderTime) +
+                                  ', ' +
+                                  remindDateFormat.format(reminderTime)
                               : 'Please pick a reminder date.'),
                         ),
                         InkWell(
                           child: Icon(CupertinoIcons.calendar),
                           onTap: () {
-                            _showCupertinoDatePicker(context);
+                            _pickReminderTime(context);
                             hasPickedDate = true;
                           },
                         )
@@ -164,48 +173,44 @@ class _AddNewReminder extends State<AddNewReminder> {
                     SizedBox(height: 10),
                     Align(
                       alignment: Alignment.centerLeft,
+                      child: Text('Expiry Date:',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Text(hasPickedExpiry
+                              ? dateFormat.format(expiryDate)
+                              : 'Expiry Date (Please pick)'),
+                        ),
+                        InkWell(
+                          child: Icon(CupertinoIcons.calendar),
+                          onTap: () {
+                            _pickExpiryDate(context);
+                            hasPickedExpiry = true;
+                          },
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
                       child: Text(
-                        'Expired? : ${(showDateDifference(reminderTime) <= -1 && hasPickedDate == true) ? 'Yes' : 'No'}',
+                        'Expired? : ${(showDateDifference(expiryDate) <= 0 && hasPickedExpiry == true) ? 'Yes' : 'No'}',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    // ButtonTheme(
-                    //   minWidth: Get.width,
-                    //   shape: RoundedRectangleBorder(
-                    //       borderRadius: BorderRadius.circular(20)),
-                    //   child: RaisedButton(
-                    //     color: Colors.green,
-                    //     child: Text('Create reminder'),
-                    //     onPressed: () async {
-                    //       if (_formKey.currentState.validate() &&
-                    //           hasPickedDate == true) {
-                    //         reminderCollection.add({
-                    //           'productImage': '',
-                    //           'productBarcode': _barcodeController.text == null
-                    //               ? ''
-                    //               : _barcodeController.text.toString(),
-                    //           'reminderName': _nameController.text,
-                    //           'reminderDate': reminderTime.toLocal(),
-                    //           'reminderDesc': _descriptionController.text
-                    //         }).whenComplete(() => Navigator.pop(context));
-                    //         print('all is good');
-                    //       } else {
-                    //         print('please check ur details');
-                    //         print(_nameController.text);
-                    //         print(reminderTime.toString());
-                    //         print(_descriptionController.text);
-                    //       }
-                    //     },
-                    //   ),
-                    // ),
                     SizedBox(height: 20),
                     ButtonTheme(
                       child: CupertinoButton.filled(
                           child: Text('Create reminder'),
                           onPressed: () async {
                             if (_formKey.currentState.validate() &&
-                                hasPickedDate == true) {
+                                hasPickedDate == true &&
+                                hasPickedExpiry == true) {
                               reminderCollection.add({
                                 'productImage': '',
                                 'productBarcode':
@@ -215,20 +220,31 @@ class _AddNewReminder extends State<AddNewReminder> {
                                 'reminderName': _nameController.text,
                                 'reminderDate': reminderTime.toLocal(),
                                 'reminderDesc': _descriptionController.text,
-                                'expiryStatus':
-                                    (showDateDifference(reminderTime) <= -1 &&
-                                            hasPickedDate == true)
+                                'isExpired':
+                                    (showDateDifference(expiryDate) <= 0 &&
+                                            hasPickedExpiry == true)
                                         ? 'Yes'
-                                        : 'No'
+                                        : 'No',
+                                'expiryDate': expiryDate.toLocal()
                               }).whenComplete(() => Navigator.pop(context));
                               print('all is good');
                             } else {
+                              setState(() {
+                                error =
+                                    'Please check that you have entered all details.';
+                              });
                               print('please check ur details');
                               print(_nameController.text);
                               print(reminderTime.toString());
                               print(_descriptionController.text);
                             }
                           }),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      error,
+                      style: errorTextStyle,
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -237,21 +253,6 @@ class _AddNewReminder extends State<AddNewReminder> {
           ),
         ));
   }
-
-  // // a future function that will open up the date picker
-  // Future _showDatePicker(BuildContext context) async {
-  //   final DateTime datePicked = await showDatePicker(
-  //       context: context,
-  //       initialDate: reminderTime,
-  //       firstDate: DateTime(2021),
-  //       lastDate: DateTime(2025));
-
-  //   if (datePicked != null && datePicked != DateTime.now()) {
-  //     setState(() {
-  //       reminderTime = datePicked;
-  //     });
-  //   }
-  // }
 
   Future barcodeScan() async {
     try {
@@ -324,7 +325,7 @@ class _AddNewReminder extends State<AddNewReminder> {
     print("==============================================================");
   }
 
-  void _showCupertinoDatePicker(BuildContext context) {
+  void _pickReminderTime(BuildContext context) {
     showCupertinoModalPopup(
         context: context,
         builder: (_) => Container(
@@ -340,6 +341,40 @@ class _AddNewReminder extends State<AddNewReminder> {
                       onDateTimeChanged: (changedDate) {
                         setState(() {
                           reminderTime = changedDate;
+                        });
+                      },
+                    ),
+                  ),
+                  CupertinoButton(
+                      child: Text(
+                        'Confirm',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      })
+                ],
+              ),
+            ));
+  }
+
+  void _pickExpiryDate(BuildContext context) {
+    showCupertinoModalPopup(
+        context: context,
+        builder: (_) => Container(
+              height: 500,
+              color: Colors.white,
+              child: Column(
+                children: [
+                  Container(
+                    height: 400,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: expiryDate,
+                      onDateTimeChanged: (changedDate) {
+                        setState(() {
+                          expiryDate = changedDate;
                         });
                       },
                     ),

@@ -2,12 +2,14 @@ import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/edit_reminder.dart';
 import 'package:expiry_reminder/shared/reminder_tile.dart';
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:expandable/expandable.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,22 +17,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final dateFormat = new DateFormat.yMd();
 
   @override
   Widget build(BuildContext context) {
-    // final user = Provider.of<User>(context);
-    // final userName = DatabaseService(user.uid).
-
-    // void _showSettingsPanel() {
-    //   showModalBottomSheet(
-    //       context: context,
-    //       builder: (context) {
-    //         return Container(
-    //           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 60),
-    //           child: SettingsForm(),
-    //         );
-    //       });
-    // }
     final user = Provider.of<User>(context);
     final reminderRef = Firestore.instance
         .collection('appUsers')
@@ -43,6 +33,7 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'All'),
           _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
+          SizedBox(height: 20)
         ],
       ),
     );
@@ -81,54 +72,152 @@ class _HomeState extends State<Home> {
             stream: streamSnapshot,
             builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
               return ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount:
                     snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
+                  if (category == 'All' || category == 'Fresh') {
+                    try {
+                      print(
+                          '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
+                      if (showDateDifference(snapshot
+                                  .data.documents[index].data['expiryDate']
+                                  .toDate()) <=
+                              0 ||
+                          snapshot.data.documents[index].data['expiryDate']
+                                  .toDate ==
+                              DateTime.now()) {
+                        snapshot.data.documents[index].reference
+                            .updateData({'isExpired': 'Yes'});
+                      } else {}
+                    } catch (e) {
+                      print(e.toString());
+                      print(snapshot.data.documents[index].data['expiryDate']
+                          .toDate());
+                    }
+                  }
                   if (category == 'All') {
                     return InkWell(
                       onTap: () => Get.to(() => EditReminder(
                             docToEdit: snapshot.data.documents[index],
                           )),
+                      onLongPress: () {
+                        showCupertinoModalPopup(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                CupertinoActionSheet(
+                                  actions: [
+                                    CupertinoActionSheetAction(
+                                        onPressed: () {
+                                          snapshot
+                                              .data.documents[index].reference
+                                              .delete()
+                                              .whenComplete(
+                                                  () => Navigator.pop(context));
+                                        },
+                                        child: Text('Delete',
+                                            style: TextStyle(
+                                                color: CupertinoColors
+                                                    .destructiveRed))),
+                                    CupertinoActionSheetAction(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text('Cancel'))
+                                  ],
+                                ));
+                      },
                       child: ReminderTile(
                         reminderTitle:
                             snapshot.data.documents[index].data['reminderName'],
-                        expiryDate: snapshot
-                            .data.documents[index].data['reminderDate']
-                            .toDate(),
+                        expiryDate: 'Expiring on: ' +
+                            dateFormat.format(snapshot
+                                .data.documents[index].data['expiryDate']
+                                .toDate()),
                       ),
                     );
                   } else {
                     if (category == 'Fresh' &&
-                        snapshot.data.documents[index].data['expiryStatus'] ==
+                        snapshot.data.documents[index].data['isExpired'] ==
                             'No') {
                       return InkWell(
                         onTap: () => Get.to(() => EditReminder(
                               docToEdit: snapshot.data.documents[index],
                             )),
+                        onLongPress: () {
+                          showCupertinoModalPopup(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  CupertinoActionSheet(
+                                    actions: [
+                                      CupertinoActionSheetAction(
+                                          onPressed: () {
+                                            snapshot
+                                                .data.documents[index].reference
+                                                .delete()
+                                                .whenComplete(() =>
+                                                    Navigator.pop(context));
+                                          },
+                                          child: Text('Delete',
+                                              style: TextStyle(
+                                                  color: CupertinoColors
+                                                      .destructiveRed))),
+                                      CupertinoActionSheetAction(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: Text('Cancel'))
+                                    ],
+                                  ));
+                        },
                         child: ReminderTile(
                           reminderTitle: snapshot
                               .data.documents[index].data['reminderName'],
-                          expiryDate: snapshot
-                              .data.documents[index].data['reminderDate']
-                              .toDate(),
+                          expiryDate: 'Expiring on: ' +
+                              dateFormat.format(snapshot
+                                  .data.documents[index].data['expiryDate']
+                                  .toDate()),
                         ),
                       );
                     } else {
                       if (category != 'All' &&
                           category != 'Fresh' &&
-                          snapshot.data.documents[index].data['expiryStatus'] ==
+                          snapshot.data.documents[index].data['isExpired'] ==
                               'Yes') {
                         return InkWell(
                           onTap: () => Get.to(() => EditReminder(
                                 docToEdit: snapshot.data.documents[index],
                               )),
+                          onLongPress: () {
+                            showCupertinoModalPopup(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    CupertinoActionSheet(
+                                      actions: [
+                                        CupertinoActionSheetAction(
+                                            onPressed: () {
+                                              snapshot.data.documents[index]
+                                                  .reference
+                                                  .delete()
+                                                  .whenComplete(() =>
+                                                      Navigator.pop(context));
+                                            },
+                                            child: Text('Delete',
+                                                style: TextStyle(
+                                                    color: CupertinoColors
+                                                        .destructiveRed))),
+                                        CupertinoActionSheetAction(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text('Cancel'))
+                                      ],
+                                    ));
+                          },
                           child: ReminderTile(
                             reminderTitle: snapshot
                                 .data.documents[index].data['reminderName'],
-                            expiryDate: snapshot
-                                .data.documents[index].data['reminderDate']
-                                .toDate(),
+                            expiryDate: 'Expired on: ' +
+                                dateFormat.format(snapshot
+                                    .data.documents[index].data['expiryDate']
+                                    .toDate()),
                           ),
                         );
                       } else {
