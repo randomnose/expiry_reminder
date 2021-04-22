@@ -33,7 +33,13 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'All'),
           _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
-          SizedBox(height: 20)
+          SizedBox(height: 20),
+          Divider(
+            height: 20,
+            thickness: 10,
+          ),
+          Text('Completed items'),
+          _showCompletedItems(context, reminderRef.snapshots())
         ],
       ),
     );
@@ -77,7 +83,10 @@ class _HomeState extends State<Home> {
                 itemCount:
                     snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
-                  if (category == 'All' || category == 'Fresh') {
+                  if (category == 'All' ||
+                      category == 'Fresh' &&
+                          snapshot.data.documents[index].data['isCompleted'] ==
+                              false) {
                     try {
                       print(
                           '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
@@ -90,14 +99,16 @@ class _HomeState extends State<Home> {
                               DateTime.now()) {
                         snapshot.data.documents[index].reference
                             .updateData({'isExpired': 'Yes'});
-                      } else {}
+                      }
                     } catch (e) {
                       print(e.toString());
                       print(snapshot.data.documents[index].data['expiryDate']
                           .toDate());
                     }
                   }
-                  if (category == 'All') {
+                  if (category == 'All' &&
+                      snapshot.data.documents[index].data['isCompleted'] ==
+                          false) {
                     return InkWell(
                       onTap: () => Get.to(() => EditReminder(
                             docToEdit: snapshot.data.documents[index],
@@ -109,21 +120,27 @@ class _HomeState extends State<Home> {
                                 CupertinoActionSheet(
                                   actions: [
                                     CupertinoActionSheetAction(
-                                        onPressed: () {
-                                          snapshot
-                                              .data.documents[index].reference
-                                              .delete()
-                                              .whenComplete(
-                                                  () => Navigator.pop(context));
-                                        },
-                                        child: Text('Delete',
-                                            style: TextStyle(
-                                                color: CupertinoColors
-                                                    .destructiveRed))),
+                                        isDefaultAction: true,
+                                        onPressed: () => snapshot
+                                                .data.documents[index].reference
+                                                .updateData({
+                                              'isCompleted': true
+                                            }).whenComplete(() =>
+                                                    Navigator.pop(context)),
+                                        child: Text('Mark as finished')),
                                     CupertinoActionSheetAction(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text('Cancel'))
+                                        isDestructiveAction: true,
+                                        onPressed: () => snapshot
+                                            .data.documents[index].reference
+                                            .delete()
+                                            .whenComplete(
+                                                () => Navigator.pop(context)),
+                                        child: Text('Delete')),
                                   ],
+                                  cancelButton: CupertinoActionSheetAction(
+                                    child: Text('Cancel'),
+                                    onPressed: () => Navigator.pop(context),
+                                  ),
                                 ));
                       },
                       child: ReminderTile(
@@ -138,7 +155,9 @@ class _HomeState extends State<Home> {
                   } else {
                     if (category == 'Fresh' &&
                         snapshot.data.documents[index].data['isExpired'] ==
-                            'No') {
+                            'No' &&
+                        snapshot.data.documents[index].data['isCompleted'] ==
+                            false) {
                       return InkWell(
                         onTap: () => Get.to(() => EditReminder(
                               docToEdit: snapshot.data.documents[index],
@@ -150,22 +169,27 @@ class _HomeState extends State<Home> {
                                   CupertinoActionSheet(
                                     actions: [
                                       CupertinoActionSheetAction(
-                                          onPressed: () {
-                                            snapshot
-                                                .data.documents[index].reference
-                                                .delete()
-                                                .whenComplete(() =>
-                                                    Navigator.pop(context));
-                                          },
-                                          child: Text('Delete',
-                                              style: TextStyle(
-                                                  color: CupertinoColors
-                                                      .destructiveRed))),
+                                          isDefaultAction: true,
+                                          onPressed: () => snapshot.data
+                                                  .documents[index].reference
+                                                  .updateData({
+                                                'isCompleted': true
+                                              }).whenComplete(() =>
+                                                      Navigator.pop(context)),
+                                          child: Text('Mark as finished')),
                                       CupertinoActionSheetAction(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: Text('Cancel'))
+                                          isDestructiveAction: true,
+                                          onPressed: () => snapshot
+                                              .data.documents[index].reference
+                                              .delete()
+                                              .whenComplete(
+                                                  () => Navigator.pop(context)),
+                                          child: Text('Delete'))
                                     ],
+                                    cancelButton: CupertinoActionSheetAction(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text('Cancel'),
+                                    ),
                                   ));
                         },
                         child: ReminderTile(
@@ -181,7 +205,9 @@ class _HomeState extends State<Home> {
                       if (category != 'All' &&
                           category != 'Fresh' &&
                           snapshot.data.documents[index].data['isExpired'] ==
-                              'Yes') {
+                              'Yes' &&
+                          snapshot.data.documents[index].data['isCompleted'] ==
+                              false) {
                         return InkWell(
                           onTap: () => Get.to(() => EditReminder(
                                 docToEdit: snapshot.data.documents[index],
@@ -193,22 +219,27 @@ class _HomeState extends State<Home> {
                                     CupertinoActionSheet(
                                       actions: [
                                         CupertinoActionSheetAction(
-                                            onPressed: () {
-                                              snapshot.data.documents[index]
-                                                  .reference
-                                                  .delete()
-                                                  .whenComplete(() =>
-                                                      Navigator.pop(context));
-                                            },
-                                            child: Text('Delete',
-                                                style: TextStyle(
-                                                    color: CupertinoColors
-                                                        .destructiveRed))),
+                                            isDefaultAction: true,
+                                            onPressed: () => snapshot.data
+                                                    .documents[index].reference
+                                                    .updateData({
+                                                  'isCompleted': true
+                                                }).whenComplete(() =>
+                                                        Navigator.pop(context)),
+                                            child: Text('Mark as finished')),
                                         CupertinoActionSheetAction(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: Text('Cancel'))
+                                            isDestructiveAction: true,
+                                            onPressed: () => snapshot
+                                                .data.documents[index].reference
+                                                .delete()
+                                                .whenComplete(() =>
+                                                    Navigator.pop(context)),
+                                            child: Text('Delete'))
                                       ],
+                                      cancelButton: CupertinoActionSheetAction(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text('Cancel'),
+                                      ),
                                     ));
                           },
                           child: ReminderTile(
@@ -233,4 +264,67 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+
+  _showCompletedItems(
+      BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
+    return StreamBuilder(
+        stream: streamSnapshot,
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          return ListView.builder(
+              itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                if (snapshot.data.documents[index].data['isCompleted'] ==
+                    true) {
+                  return InkWell(
+                    onLongPress: () {
+                      showCupertinoModalPopup(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              CupertinoActionSheet(
+                                actions: [
+                                  CupertinoActionSheetAction(
+                                      isDefaultAction: true,
+                                      onPressed: () => snapshot
+                                              .data.documents[index].reference
+                                              .updateData({
+                                            'isCompleted': false
+                                          }).whenComplete(
+                                                  () => Navigator.pop(context)),
+                                      child: Text('Mark as incomplete')),
+                                  CupertinoActionSheetAction(
+                                      isDestructiveAction: true,
+                                      onPressed: () => snapshot
+                                          .data.documents[index].reference
+                                          .delete()
+                                          .whenComplete(
+                                              () => Navigator.pop(context)),
+                                      child: Text('Delete'))
+                                ],
+                                cancelButton: CupertinoActionSheetAction(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('Cancel'),
+                                ),
+                              ));
+                    },
+                    child: ReminderTile(
+                      reminderTitle:
+                          snapshot.data.documents[index].data['reminderName'],
+                      expiryDate: 'Expiring at: ' +
+                          dateFormat.format(snapshot
+                              .data.documents[index].data['expiryDate']
+                              .toDate()),
+                    ),
+                  );
+                }
+                return Container();
+              });
+        });
+  }
+  // TODO: send email notification
+  // get product name, and expiry date using the following method:
+  // forEach reminder, if reminderDate <= DateTime.now(),
+  // then append the product name and expiry date into a dynamic list.
+  // email that dynamic list to user's email.
 }

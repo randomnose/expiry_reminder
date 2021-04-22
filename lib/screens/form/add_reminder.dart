@@ -225,7 +225,8 @@ class _AddNewReminder extends State<AddNewReminder> {
                                             hasPickedExpiry == true)
                                         ? 'Yes'
                                         : 'No',
-                                'expiryDate': expiryDate.toLocal()
+                                'expiryDate': expiryDate.toLocal(),
+                                'isCompleted' : false
                               }).whenComplete(() => Navigator.pop(context));
                               print('all is good');
                             } else {
