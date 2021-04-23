@@ -88,7 +88,7 @@ class _HomeState extends State<Home> {
                     snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
                   if (category == 'All' ||
-                      category == 'Fresh' && snapshot.hasData) {
+                      category == 'Fresh' && snapshot.data.documents.length != 0) {
                     try {
                       print(
                           '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');

@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import 'package:firebase_storage/firebase_storage.dart';
 
 // TODO: allow user to add quantity for their entry of reminders.
@@ -131,7 +131,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                         label: Text('Use the barcode scanner instead'),
                         icon: Icon(CupertinoIcons.qrcode_viewfinder),
                         onPressed: () {
-                          barcodeScan(context);
+                          barcodeScan();
                         },
                       ),
                     ),
@@ -216,7 +216,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                                 hasPickedDate == true &&
                                 hasPickedExpiry == true) {
                               if (hasTakenImage == true) {
-                                String fileName = basename(_image.path);
+                                String fileName = path.basename(_image.path);
                                 StorageReference firebaseStorageRef =
                                     FirebaseStorage.instance
                                         .ref()
@@ -289,7 +289,7 @@ class _AddNewReminder extends State<AddNewReminder> {
         ));
   }
 
-  Future barcodeScan(BuildContext context) async {
+  Future barcodeScan() async {
     try {
       var barcodeValue = await FlutterBarcodeScanner.scanBarcode(
           '#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
@@ -305,7 +305,7 @@ class _AddNewReminder extends State<AddNewReminder> {
         });
         print("==============================================================");
         print("Latest barcode controller text is ->" + _barcodeController.text);
-        _getProductInfoFromAPI(context);
+        _getProductInfoFromAPI();
       }
       return barcodeValue;
     } on Exception catch (e) {
@@ -313,7 +313,7 @@ class _AddNewReminder extends State<AddNewReminder> {
     }
   }
 
-  Future _getProductInfoFromAPI(BuildContext context) async {
+  Future _getProductInfoFromAPI() async {
     try {
       print('The barcode getting from _getProductInfoAPI is -> ' +
           _barcodeController.text);
