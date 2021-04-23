@@ -9,7 +9,7 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Text('Settings page'),
+      Text('Profile page'),
       // final user = Provider.of<User>(context);
       // final userName = DatabaseService(user.uid).
 

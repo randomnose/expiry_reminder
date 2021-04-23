@@ -27,6 +27,11 @@ class _HomeState extends State<Home> {
         .document(user.uid)
         .collection('reminders');
 
+    final completedReminders = Firestore.instance
+        .collection('appUsers')
+        .document(user.uid)
+        .collection('completedReminders');
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -34,12 +39,8 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
           SizedBox(height: 20),
-          Divider(
-            height: 20,
-            thickness: 10,
-          ),
-          Text('Completed items'),
-          _showCompletedItems(context, reminderRef.snapshots())
+          Divider(height: 20, thickness: 10),
+          _showCompletedItems(context, completedReminders.snapshots())
         ],
       ),
     );
@@ -60,7 +61,10 @@ class _HomeState extends State<Home> {
                     : CircleAvatar(backgroundColor: appRed),
             title: category == 'All'
                 ? Text('All Items',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20))
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: appListTileGrey))
                 : category == 'Fresh'
                     ? Text('Fresh Items',
                         style: TextStyle(
@@ -84,9 +88,7 @@ class _HomeState extends State<Home> {
                     snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
                   if (category == 'All' ||
-                      category == 'Fresh' &&
-                          snapshot.data.documents[index].data['isCompleted'] ==
-                              false) {
+                      category == 'Fresh' && snapshot.hasData) {
                     try {
                       print(
                           '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
@@ -106,150 +108,30 @@ class _HomeState extends State<Home> {
                           .toDate());
                     }
                   }
-                  if (category == 'All' &&
-                      snapshot.data.documents[index].data['isCompleted'] ==
-                          false) {
-                    return InkWell(
-                      onTap: () => Get.to(() => EditReminder(
-                            docToEdit: snapshot.data.documents[index],
-                          )),
-                      onLongPress: () {
-                        showCupertinoModalPopup(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                CupertinoActionSheet(
-                                  actions: [
-                                    CupertinoActionSheetAction(
-                                        isDefaultAction: true,
-                                        onPressed: () => snapshot
-                                                .data.documents[index].reference
-                                                .updateData({
-                                              'isCompleted': true
-                                            }).whenComplete(() =>
-                                                    Navigator.pop(context)),
-                                        child: Text('Mark as finished')),
-                                    CupertinoActionSheetAction(
-                                        isDestructiveAction: true,
-                                        onPressed: () => snapshot
-                                            .data.documents[index].reference
-                                            .delete()
-                                            .whenComplete(
-                                                () => Navigator.pop(context)),
-                                        child: Text('Delete')),
-                                  ],
-                                  cancelButton: CupertinoActionSheetAction(
-                                    child: Text('Cancel'),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                ));
-                      },
-                      child: ReminderTile(
-                        reminderTitle:
-                            snapshot.data.documents[index].data['reminderName'],
-                        expiryDate: 'Expiring on: ' +
-                            dateFormat.format(snapshot
-                                .data.documents[index].data['expiryDate']
-                                .toDate()),
-                      ),
+                  if (category == 'All') {
+                    return ReminderTile(
+                      documentRef: snapshot.data.documents[index],
+                      popUpPrimaryMessage: 'Mark as complete',
+                      isCompleted: false,
                     );
                   } else {
                     if (category == 'Fresh' &&
                         snapshot.data.documents[index].data['isExpired'] ==
-                            'No' &&
-                        snapshot.data.documents[index].data['isCompleted'] ==
-                            false) {
-                      return InkWell(
-                        onTap: () => Get.to(() => EditReminder(
-                              docToEdit: snapshot.data.documents[index],
-                            )),
-                        onLongPress: () {
-                          showCupertinoModalPopup(
-                              context: context,
-                              builder: (BuildContext context) =>
-                                  CupertinoActionSheet(
-                                    actions: [
-                                      CupertinoActionSheetAction(
-                                          isDefaultAction: true,
-                                          onPressed: () => snapshot.data
-                                                  .documents[index].reference
-                                                  .updateData({
-                                                'isCompleted': true
-                                              }).whenComplete(() =>
-                                                      Navigator.pop(context)),
-                                          child: Text('Mark as finished')),
-                                      CupertinoActionSheetAction(
-                                          isDestructiveAction: true,
-                                          onPressed: () => snapshot
-                                              .data.documents[index].reference
-                                              .delete()
-                                              .whenComplete(
-                                                  () => Navigator.pop(context)),
-                                          child: Text('Delete'))
-                                    ],
-                                    cancelButton: CupertinoActionSheetAction(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: Text('Cancel'),
-                                    ),
-                                  ));
-                        },
-                        child: ReminderTile(
-                          reminderTitle: snapshot
-                              .data.documents[index].data['reminderName'],
-                          expiryDate: 'Expiring on: ' +
-                              dateFormat.format(snapshot
-                                  .data.documents[index].data['expiryDate']
-                                  .toDate()),
-                        ),
+                            'No') {
+                      return ReminderTile(
+                        documentRef: snapshot.data.documents[index],
+                        popUpPrimaryMessage: 'Mark as complete',
+                        isCompleted: false,
                       );
                     } else {
                       if (category != 'All' &&
                           category != 'Fresh' &&
                           snapshot.data.documents[index].data['isExpired'] ==
-                              'Yes' &&
-                          snapshot.data.documents[index].data['isCompleted'] ==
-                              false) {
-                        return InkWell(
-                          onTap: () => Get.to(() => EditReminder(
-                                docToEdit: snapshot.data.documents[index],
-                              )),
-                          onLongPress: () {
-                            showCupertinoModalPopup(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    CupertinoActionSheet(
-                                      actions: [
-                                        CupertinoActionSheetAction(
-                                            isDefaultAction: true,
-                                            onPressed: () => snapshot.data
-                                                    .documents[index].reference
-                                                    .updateData({
-                                                  'isCompleted': true
-                                                }).whenComplete(() =>
-                                                        Navigator.pop(context)),
-                                            child: Text('Mark as finished')),
-                                        CupertinoActionSheetAction(
-                                            isDestructiveAction: true,
-                                            onPressed: () => snapshot
-                                                .data.documents[index].reference
-                                                .delete()
-                                                .whenComplete(() =>
-                                                    Navigator.pop(context)),
-                                            child: Text('Delete'))
-                                      ],
-                                      cancelButton: CupertinoActionSheetAction(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text('Cancel'),
-                                      ),
-                                    ));
-                          },
-                          child: ReminderTile(
-                            reminderTitle: snapshot
-                                .data.documents[index].data['reminderName'],
-                            expiryDate: 'Expired on: ' +
-                                dateFormat.format(snapshot
-                                    .data.documents[index].data['expiryDate']
-                                    .toDate()),
-                          ),
+                              'Yes') {
+                        return ReminderTile(
+                          documentRef: snapshot.data.documents[index],
+                          popUpPrimaryMessage: 'Mark as complete',
+                          isCompleted: false,
                         );
                       } else {
                         return Container();
@@ -267,60 +149,48 @@ class _HomeState extends State<Home> {
 
   _showCompletedItems(
       BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
-    return StreamBuilder(
-        stream: streamSnapshot,
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          return ListView.builder(
-              itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
-              physics: NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                if (snapshot.data.documents[index].data['isCompleted'] ==
-                    true) {
-                  return InkWell(
-                    onLongPress: () {
-                      showCupertinoModalPopup(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              CupertinoActionSheet(
-                                actions: [
-                                  CupertinoActionSheetAction(
-                                      isDefaultAction: true,
-                                      onPressed: () => snapshot
-                                              .data.documents[index].reference
-                                              .updateData({
-                                            'isCompleted': false
-                                          }).whenComplete(
-                                                  () => Navigator.pop(context)),
-                                      child: Text('Mark as incomplete')),
-                                  CupertinoActionSheetAction(
-                                      isDestructiveAction: true,
-                                      onPressed: () => snapshot
-                                          .data.documents[index].reference
-                                          .delete()
-                                          .whenComplete(
-                                              () => Navigator.pop(context)),
-                                      child: Text('Delete'))
-                                ],
-                                cancelButton: CupertinoActionSheetAction(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: Text('Cancel'),
-                                ),
-                              ));
-                    },
-                    child: ReminderTile(
-                      reminderTitle:
-                          snapshot.data.documents[index].data['reminderName'],
-                      expiryDate: 'Expiring at: ' +
-                          dateFormat.format(snapshot
-                              .data.documents[index].data['expiryDate']
-                              .toDate()),
-                    ),
-                  );
-                }
-                return Container();
-              });
-        });
+    return Padding(
+      padding: EdgeInsets.all(8),
+      child: Card(
+        color: Colors.grey[200],
+        child: ExpandablePanel(
+          header: ListTile(
+            leading: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 7.0),
+                  child: Icon(CupertinoIcons.checkmark_seal, size: 28),
+                ),
+              ],
+            ),
+            title: Text(
+              'Completed Items',
+              style: TextStyle(
+                  color: appListTileGrey.withOpacity(0.8),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
+            ),
+          ),
+          expanded: StreamBuilder(
+              stream: streamSnapshot,
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                return ListView.builder(
+                    itemCount:
+                        snapshot.hasData ? snapshot.data.documents.length : 0,
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return ReminderTile(
+                        documentRef: snapshot.data.documents[index],
+                        popUpPrimaryMessage: 'Restore',
+                        isCompleted: true,
+                      );
+                    });
+              }),
+        ),
+      ),
+    );
   }
   // TODO: send email notification
   // get product name, and expiry date using the following method:

@@ -32,7 +32,7 @@ class IndexPageState extends State<IndexPage> {
                   'Expiry Reminder',
                   style: TextStyle(fontSize: 20),
                 )
-              : Text('Settings', style: TextStyle(fontSize: 20)),
+              : Text('Profile', style: TextStyle(fontSize: 20)),
           trailing: _currentIndex == 0
               ? TextButton(
                   child: Text('Logout', style: TextStyle(color: Colors.white)),
@@ -69,7 +69,7 @@ class IndexPageState extends State<IndexPage> {
             BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.square_list), label: 'Reminders'),
             BottomNavigationBarItem(
-                icon: Icon(CupertinoIcons.settings), label: 'Settings')
+                icon: Icon(CupertinoIcons.profile_circled), label: 'Profile')
           ],
           onTap: (index) {
             setState(() {
