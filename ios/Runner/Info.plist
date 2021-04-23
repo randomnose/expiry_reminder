@@ -23,7 +23,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera is needed for barcode scanning.</string>
+	<string>Camera is needed for barcode scanning and taking images.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Access to Photo Librarry is needed to select images.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

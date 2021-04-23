@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
@@ -11,6 +9,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 // TODO: allow user to add quantity for their entry of reminders.
 class AddNewReminder extends StatefulWidget {
@@ -19,6 +22,9 @@ class AddNewReminder extends StatefulWidget {
 }
 
 class _AddNewReminder extends State<AddNewReminder> {
+  File _image;
+  final imagePicker = ImagePicker();
+
   GlobalKey<FormState> _formKey;
   DateTime reminderTime = DateTime.now().toLocal();
   DateTime expiryDate = DateTime.now().toLocal();
@@ -28,6 +34,7 @@ class _AddNewReminder extends State<AddNewReminder> {
   String error = '';
   bool hasPickedDate = false;
   bool hasPickedExpiry = false;
+  bool hasTakenImage = false;
 
   TextEditingController _nameController;
   TextEditingController _descriptionController;
@@ -82,21 +89,18 @@ class _AddNewReminder extends State<AddNewReminder> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // TODO: create an if statement to show snippet of user's image
-                    // if no image, then show placeholder
                     Container(
                       padding: EdgeInsets.only(bottom: 5),
                       height: 200,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/image_placeholder.png'),
-                            fit: BoxFit.cover),
-                      ),
+                      child: _image == null
+                          ? Image(
+                              image: AssetImage('assets/image_placeholder.png'))
+                          : Image.file(_image, fit: BoxFit.fill),
                     ),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton.icon(
-                          onPressed: () {},
+                          onPressed: getImage,
                           icon: Icon(CupertinoIcons.photo_camera),
                           label: Text('Take a photo of the product')),
                     ),
@@ -127,7 +131,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                         label: Text('Use the barcode scanner instead'),
                         icon: Icon(CupertinoIcons.qrcode_viewfinder),
                         onPressed: () {
-                          barcodeScan();
+                          barcodeScan(context);
                         },
                       ),
                     ),
@@ -211,22 +215,53 @@ class _AddNewReminder extends State<AddNewReminder> {
                             if (_formKey.currentState.validate() &&
                                 hasPickedDate == true &&
                                 hasPickedExpiry == true) {
-                              reminderCollection.add({
-                                'productImage': '',
-                                'productBarcode':
-                                    _barcodeController.text == null
-                                        ? ''
-                                        : _barcodeController.text.toString(),
-                                'reminderName': _nameController.text,
-                                'reminderDate': reminderTime.toLocal(),
-                                'reminderDesc': _descriptionController.text,
-                                'isExpired':
-                                    (showDateDifference(expiryDate) <= 0 &&
-                                            hasPickedExpiry == true)
-                                        ? 'Yes'
-                                        : 'No',
-                                'expiryDate': expiryDate.toLocal(),
-                              }).whenComplete(() => Navigator.pop(context));
+                              if (hasTakenImage == true) {
+                                String fileName = basename(_image.path);
+                                StorageReference firebaseStorageRef =
+                                    FirebaseStorage.instance
+                                        .ref()
+                                        .child('images/$fileName');
+                                StorageUploadTask uploadTask =
+                                    firebaseStorageRef.putFile(_image);
+                                StorageTaskSnapshot taskSnapshot =
+                                    await uploadTask.onComplete;
+                                final String imageUrl =
+                                    await taskSnapshot.ref.getDownloadURL();
+                                reminderCollection.add({
+                                  'productImage': hasTakenImage ? imageUrl : '',
+                                  'productBarcode':
+                                      _barcodeController.text == null
+                                          ? ''
+                                          : _barcodeController.text.toString(),
+                                  'reminderName': _nameController.text,
+                                  'reminderDate': reminderTime.toLocal(),
+                                  'reminderDesc': _descriptionController.text,
+                                  'isExpired':
+                                      (showDateDifference(expiryDate) <= 0 &&
+                                              hasPickedExpiry == true)
+                                          ? 'Yes'
+                                          : 'No',
+                                  'expiryDate': expiryDate.toLocal(),
+                                }).whenComplete(() => Navigator.pop(context));
+                              } else {
+                                reminderCollection.add({
+                                  'productImage': '',
+                                  'productBarcode':
+                                      _barcodeController.text == null
+                                          ? ''
+                                          : _barcodeController.text.toString(),
+                                  'reminderName': _nameController.text,
+                                  'reminderDate': reminderTime.toLocal(),
+                                  'reminderDesc': _descriptionController.text,
+                                  'isExpired':
+                                      (showDateDifference(expiryDate) <= 0 &&
+                                              hasPickedExpiry == true)
+                                          ? 'Yes'
+                                          : 'No',
+                                  'expiryDate': expiryDate.toLocal(),
+                                }).whenComplete(() => Navigator.pop(context));
+                              }
+
                               print('all is good');
                             } else {
                               setState(() {
@@ -254,7 +289,7 @@ class _AddNewReminder extends State<AddNewReminder> {
         ));
   }
 
-  Future barcodeScan() async {
+  Future barcodeScan(BuildContext context) async {
     try {
       var barcodeValue = await FlutterBarcodeScanner.scanBarcode(
           '#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
@@ -270,7 +305,7 @@ class _AddNewReminder extends State<AddNewReminder> {
         });
         print("==============================================================");
         print("Latest barcode controller text is ->" + _barcodeController.text);
-        _getProductInfoFromAPI();
+        _getProductInfoFromAPI(context);
       }
       return barcodeValue;
     } on Exception catch (e) {
@@ -278,7 +313,7 @@ class _AddNewReminder extends State<AddNewReminder> {
     }
   }
 
-  Future _getProductInfoFromAPI() async {
+  Future _getProductInfoFromAPI(BuildContext context) async {
     try {
       print('The barcode getting from _getProductInfoAPI is -> ' +
           _barcodeController.text);
@@ -392,4 +427,26 @@ class _AddNewReminder extends State<AddNewReminder> {
               ),
             ));
   }
+
+  Future getImage() async {
+    final image = await imagePicker.getImage(source: ImageSource.camera);
+    setState(() {
+      _image = File(image.path);
+      hasTakenImage = true;
+    });
+  }
+
+  // Future uploadImageToFirebase(BuildContext context,
+  //     CollectionReference reminderCollection, String uid) async {
+  //   String fileName = basename(_image.path);
+  //   StorageReference firebaseStorageRef =
+  //       FirebaseStorage.instance.ref().child('images/$fileName');
+  //   StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+  //   StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+  //   taskSnapshot.ref.getDownloadURL().then((value) {
+  //     print("Link retrieval done: $value");
+  //     reminderCollection.add({'productImage': value});
+  //     return value;
+  //   });
+  // }
 }

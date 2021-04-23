@@ -4,6 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class EditReminder extends StatefulWidget {
   final dynamic docToEdit;
@@ -15,12 +19,17 @@ class EditReminder extends StatefulWidget {
 }
 
 class _EditReminderState extends State<EditReminder> {
+  File _image;
+  final imagePicker = ImagePicker();
   GlobalKey<FormState> _formKey;
   TextEditingController _nameController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   TextEditingController _barcodeController = TextEditingController();
   DateTime reminderTime;
   DateTime expiryDate;
+  String imageUrl;
+
+  bool hasTakenNewImage = false;
 
   final dateFormat = new DateFormat.yMMMMEEEEd();
   final remindDateFormat = new DateFormat.jms();
@@ -36,6 +45,7 @@ class _EditReminderState extends State<EditReminder> {
         TextEditingController(text: widget.docToEdit.data['productBarcode']);
     reminderTime = widget.docToEdit.data['reminderDate'].toDate();
     expiryDate = widget.docToEdit.data['expiryDate'].toDate();
+    imageUrl = widget.docToEdit.data['productImage'];
     super.initState();
   }
 
@@ -82,18 +92,19 @@ class _EditReminderState extends State<EditReminder> {
                     // TODO: create an if statement to show snippet of user's image
                     // if no image, then show placeholder
                     Container(
-                      padding: EdgeInsets.only(bottom: 5),
-                      height: 200,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/image_placeholder.png'),
-                            fit: BoxFit.cover),
-                      ),
-                    ),
+                        padding: EdgeInsets.only(bottom: 5),
+                        height: 200,
+                        child: hasTakenNewImage
+                            ? Image.file(_image)
+                            : imageUrl == ''
+                                ? Image(
+                                    image: AssetImage(
+                                        'assets/image_placeholder.png'))
+                                : Image.network(imageUrl)),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton.icon(
-                          onPressed: () {},
+                          onPressed: getImage,
                           icon: Icon(CupertinoIcons.photo_camera),
                           label: Text('Take a photo of the product')),
                     ),
@@ -115,7 +126,8 @@ class _EditReminderState extends State<EditReminder> {
                       keyboardType: TextInputType.number,
                       controller: _barcodeController,
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Barcode', labelText: 'Product Barcode'),
+                          hintText: 'Product Barcode',
+                          labelText: 'Product Barcode'),
                     ),
                     SizedBox(height: 20),
                     TextFormField(
@@ -128,7 +140,8 @@ class _EditReminderState extends State<EditReminder> {
                         }
                       },
                       decoration: textInputDecoration.copyWith(
-                          hintText: 'Product Description (mark "-" if none)', labelText: 'Product Description'),
+                          hintText: 'Product Description (mark "-" if none)',
+                          labelText: 'Product Description'),
                     ),
                     SizedBox(height: 20),
                     Align(
@@ -188,21 +201,50 @@ class _EditReminderState extends State<EditReminder> {
                           child: Text('Confirm your changes'),
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
-                              widget.docToEdit.reference.updateData({
-                                'productImage': '',
-                                'productBarcode':
-                                    _barcodeController.text == null
-                                        ? ''
-                                        : _barcodeController.text.toString(),
-                                'reminderName': _nameController.text,
-                                'reminderDate': reminderTime.toLocal(),
-                                'reminderDesc': _descriptionController.text,
-                                'isExpired':
-                                    (showDateDifference(expiryDate) <= 0)
-                                        ? 'Yes'
-                                        : 'No',
-                                'expiryDate': expiryDate.toLocal()
-                              }).whenComplete(() => Navigator.pop(context));
+                              if (hasTakenNewImage == true) {
+                                String fileName = basename(_image.path);
+                                StorageReference firebaseStorageRef =
+                                    FirebaseStorage.instance
+                                        .ref()
+                                        .child('images/$fileName');
+                                StorageUploadTask uploadTask =
+                                    firebaseStorageRef.putFile(_image);
+                                StorageTaskSnapshot taskSnapshot =
+                                    await uploadTask.onComplete;
+                                final String newImageUrl =
+                                    await taskSnapshot.ref.getDownloadURL();
+                                widget.docToEdit.reference.updateData({
+                                  'productImage': newImageUrl,
+                                  'productBarcode':
+                                      _barcodeController.text == null
+                                          ? ''
+                                          : _barcodeController.text.toString(),
+                                  'reminderName': _nameController.text,
+                                  'reminderDate': reminderTime.toLocal(),
+                                  'reminderDesc': _descriptionController.text,
+                                  'isExpired':
+                                      (showDateDifference(expiryDate) <= 0)
+                                          ? 'Yes'
+                                          : 'No',
+                                  'expiryDate': expiryDate.toLocal()
+                                }).whenComplete(() => Navigator.pop(context));
+                              } else {
+                                widget.docToEdit.reference.updateData({
+                                  'productImage': imageUrl,
+                                  'productBarcode':
+                                      _barcodeController.text == null
+                                          ? ''
+                                          : _barcodeController.text.toString(),
+                                  'reminderName': _nameController.text,
+                                  'reminderDate': reminderTime.toLocal(),
+                                  'reminderDesc': _descriptionController.text,
+                                  'isExpired':
+                                      (showDateDifference(expiryDate) <= 0)
+                                          ? 'Yes'
+                                          : 'No',
+                                  'expiryDate': expiryDate.toLocal()
+                                }).whenComplete(() => Navigator.pop(context));
+                              }
                               print('all is good');
                             } else {
                               setState(() {
@@ -296,5 +338,13 @@ class _EditReminderState extends State<EditReminder> {
                 ],
               ),
             ));
+  }
+
+  Future getImage() async {
+    final image = await imagePicker.getImage(source: ImageSource.camera);
+    setState(() {
+      _image = File(image.path);
+      hasTakenNewImage = true;
+    });
   }
 }
