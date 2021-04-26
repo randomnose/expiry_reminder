@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 // this function is meant to find difference in expiry date, not reminder time
 int showDateDifference(DateTime date) {
