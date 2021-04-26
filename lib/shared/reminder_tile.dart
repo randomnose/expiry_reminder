@@ -1,5 +1,6 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/edit_reminder.dart';
+import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -64,11 +65,10 @@ class _ReminderTileState extends State<ReminderTile> {
                                       widget.documentRef.data['isExpired'],
                                   'expiryDate':
                                       widget.documentRef.data['expiryDate'],
-                                }).whenComplete(() => widget
-                                    .documentRef.reference
-                                    .delete()
-                                    .whenComplete(
-                                        () => Navigator.pop(context)));
+                                }).whenComplete(() =>
+                                    deleteReminder(widget.documentRef, false)
+                                        .whenComplete(
+                                            () => Navigator.pop(context)));
                               } else {
                                 completedReminders.add({
                                   'productImage':
@@ -85,18 +85,16 @@ class _ReminderTileState extends State<ReminderTile> {
                                       widget.documentRef.data['isExpired'],
                                   'expiryDate':
                                       widget.documentRef.data['expiryDate'],
-                                }).whenComplete(() => widget
-                                    .documentRef.reference
-                                    .delete()
-                                    .whenComplete(
-                                        () => Navigator.pop(context)));
+                                }).whenComplete(() =>
+                                    deleteReminder(widget.documentRef, false)
+                                        .whenComplete(
+                                            () => Navigator.pop(context)));
                               }
                             },
                             child: Text(widget.popUpPrimaryMessage)),
                         CupertinoActionSheetAction(
                             isDestructiveAction: true,
-                            onPressed: () => widget.documentRef.reference
-                                .delete()
+                            onPressed: () => deleteReminder(widget.documentRef, true)
                                 .whenComplete(() => Navigator.pop(context)),
                             child: Text('Delete')),
                       ],

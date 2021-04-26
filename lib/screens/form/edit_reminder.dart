@@ -68,13 +68,9 @@ class _EditReminderState extends State<EditReminder> {
             trailing: Material(
               color: appGreen,
               child: IconButton(
-                icon: Icon(CupertinoIcons.trash),
-                onPressed: () {
-                  widget.docToEdit.reference
-                      .delete()
-                      .whenComplete(() => Navigator.pop(context));
-                },
-              ),
+                  icon: Icon(CupertinoIcons.trash),
+                  onPressed: () => deleteReminder(widget.docToEdit, true)
+                      .whenComplete(() => Navigator.pop(context))),
             )),
         body: GestureDetector(
           onTap: () {
