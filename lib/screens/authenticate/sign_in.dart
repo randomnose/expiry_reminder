@@ -90,7 +90,6 @@ class _SignInState extends State<SignIn> {
                               ],
                             ),
                             SizedBox(height: 20.0),
-                            // TODO: add prefix icon
                             TextFormField(
                               controller: _passwordController,
                               decoration: textInputDecoration.copyWith(

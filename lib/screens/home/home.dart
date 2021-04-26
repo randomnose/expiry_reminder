@@ -1,11 +1,9 @@
 import 'package:expiry_reminder/models/user.dart';
-import 'package:expiry_reminder/screens/form/edit_reminder.dart';
 import 'package:expiry_reminder/shared/reminder_tile.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:expandable/expandable.dart';
@@ -88,7 +86,8 @@ class _HomeState extends State<Home> {
                     snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
                   if (category == 'All' ||
-                      category == 'Fresh' && snapshot.data.documents.length != 0) {
+                      category == 'Fresh' &&
+                          snapshot.data.documents.length != 0) {
                     try {
                       print(
                           '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
@@ -192,9 +191,4 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-  // TODO: send email notification
-  // get product name, and expiry date using the following method:
-  // forEach reminder, if reminderDate <= DateTime.now(),
-  // then append the product name and expiry date into a dynamic list.
-  // email that dynamic list to user's email.
 }

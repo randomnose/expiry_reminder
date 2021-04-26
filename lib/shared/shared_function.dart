@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 // this function is meant to find difference in expiry date, not reminder time
 int showDateDifference(DateTime date) {
@@ -30,3 +31,9 @@ deleteReminder(DocumentSnapshot docToDelete, bool ifDeleteImage) async {
   await docToDelete.reference.delete().catchError((onError) =>
       print('An error has occured when deleting reminder.\n $onError'));
 }
+
+// TODO: send email notification
+// get product name, and expiry date using the following method:
+// forEach reminder, if reminderDate <= DateTime.now(),
+// then append the product name and expiry date into a dynamic list.
+// email that dynamic list to user's email.

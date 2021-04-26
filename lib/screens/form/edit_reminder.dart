@@ -85,8 +85,6 @@ class _EditReminderState extends State<EditReminder> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // TODO: create an if statement to show snippet of user's image
-                    // if no image, then show placeholder
                     Container(
                         padding: EdgeInsets.only(bottom: 5),
                         height: 200,
