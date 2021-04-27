@@ -102,7 +102,7 @@ class _EditReminderState extends State<EditReminder> {
                               : Image.network(imageUrl),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(bottom: 20.0),
+                      padding: EdgeInsets.only(bottom: 15.0),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton.icon(
@@ -219,14 +219,6 @@ class _EditReminderState extends State<EditReminder> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10.0),
-                      child: Text(
-                        error,
-                        style: errorTextStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
                     ButtonTheme(
                       minWidth: Get.width * 0.6,
                       buttonColor: appButtonBrown,
@@ -251,7 +243,17 @@ class _EditReminderState extends State<EditReminder> {
                                 });
                               }
                               if (hasTakenNewImage == true) {
-                                String newImageUrl = uploadImageToFirebase();
+                                String fileName = basename(_image.path);
+                                StorageReference firebaseStorageRef =
+                                    FirebaseStorage.instance
+                                        .ref()
+                                        .child('images/$fileName');
+                                StorageUploadTask uploadTask =
+                                    firebaseStorageRef.putFile(_image);
+                                StorageTaskSnapshot taskSnapshot =
+                                    await uploadTask.onComplete;
+                                final String newImageUrl =
+                                    await taskSnapshot.ref.getDownloadURL();
                                 print("new newNotiID is->>>> $newNotiID");
                                 widget.docToEdit.reference.updateData({
                                   'notificationID': newNotiID,
@@ -297,7 +299,14 @@ class _EditReminderState extends State<EditReminder> {
                             }
                           }),
                     ),
-                    SizedBox(height: 10)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Text(
+                        error,
+                        style: errorTextStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -382,14 +391,14 @@ class _EditReminderState extends State<EditReminder> {
     });
   }
 
-  uploadImageToFirebase() async {
-    String fileName = basename(_image.path);
-    StorageReference firebaseStorageRef =
-        FirebaseStorage.instance.ref().child('images/$fileName');
-    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
-    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-    final String newImageUrl = await taskSnapshot.ref.getDownloadURL();
+  // uploadImageToFirebase() async {
+  //   String fileName = basename(_image.path);
+  //   StorageReference firebaseStorageRef =
+  //       FirebaseStorage.instance.ref().child('images/$fileName');
+  //   StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+  //   StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+  //   final String newImageUrl = await taskSnapshot.ref.getDownloadURL();
 
-    return newImageUrl;
-  }
+  //   return newImageUrl;
+  // }
 }
