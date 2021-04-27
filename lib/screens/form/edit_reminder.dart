@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,6 +10,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:expiry_reminder/shared/shared_function.dart';
 
 class EditReminder extends StatefulWidget {
   final dynamic docToEdit;
@@ -28,12 +31,16 @@ class _EditReminderState extends State<EditReminder> {
   DateTime reminderTime;
   DateTime expiryDate;
   String imageUrl;
+  int notiID;
+  int newNotiID;
 
   bool hasTakenNewImage = false;
 
   final dateFormat = new DateFormat.yMMMMEEEEd();
   final remindDateFormat = new DateFormat.jms();
+  final _randomiser = new Random();
   String error = '';
+
   @override
   void initState() {
     _formKey = GlobalKey<FormState>();
@@ -46,6 +53,8 @@ class _EditReminderState extends State<EditReminder> {
     reminderTime = widget.docToEdit.data['reminderDate'].toDate();
     expiryDate = widget.docToEdit.data['expiryDate'].toDate();
     imageUrl = widget.docToEdit.data['productImage'];
+    notiID = widget.docToEdit.data['notificationID'];
+    newNotiID = notiID;
     super.initState();
   }
 
@@ -195,6 +204,18 @@ class _EditReminderState extends State<EditReminder> {
                           child: Text('Confirm your changes'),
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
+                              if (widget.docToEdit.data['reminderDate']
+                                      .toDate() !=
+                                  reminderTime) {
+                                setState(() {
+                                  newNotiID = _randomiser.nextInt(100);
+                                  print(
+                                      'newNotiID after randomising is->>>>>> $newNotiID');
+                                  deleteSpecificScheduledReminder(notiID);
+                                  scheduleReminder(reminderTime,
+                                      _nameController.text, newNotiID);
+                                });
+                              }
                               if (hasTakenNewImage == true) {
                                 String fileName = basename(_image.path);
                                 StorageReference firebaseStorageRef =
@@ -207,7 +228,9 @@ class _EditReminderState extends State<EditReminder> {
                                     await uploadTask.onComplete;
                                 final String newImageUrl =
                                     await taskSnapshot.ref.getDownloadURL();
+                                print("new newNotiID is->>>> $newNotiID");
                                 widget.docToEdit.reference.updateData({
+                                  'notificationID': newNotiID,
                                   'productImage': newImageUrl,
                                   'productBarcode':
                                       _barcodeController.text == null
@@ -223,7 +246,9 @@ class _EditReminderState extends State<EditReminder> {
                                   'expiryDate': expiryDate.toLocal()
                                 }).whenComplete(() => Navigator.pop(context));
                               } else {
+                                print("new newNotiID is->>>> $newNotiID");
                                 widget.docToEdit.reference.updateData({
+                                  'notificationID': newNotiID,
                                   'productImage': imageUrl,
                                   'productBarcode':
                                       _barcodeController.text == null

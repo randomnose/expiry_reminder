@@ -21,8 +21,10 @@ int showDateDifference(DateTime date) {
 
 // ----------------------------------------------------------------------------
 // Function to delete reminder along with the image
-deleteReminder(DocumentSnapshot docToDelete, bool ifDeleteImage) async {
-  if (ifDeleteImage == true) {
+deleteReminder(DocumentSnapshot docToDelete, bool ifCompletelyDelete) async {
+  if (ifCompletelyDelete == true) {
+    deleteSpecificScheduledReminder(docToDelete.data['notificationID']);
+
     // if the productImage is not '', then we delete the image.
     if (docToDelete.data['productImage'] != '') {
       StorageReference imgStorageRef = await FirebaseStorage.instance
@@ -82,9 +84,8 @@ Future sendReminder() async {
 
 // ----------------------------------------------------------------------------
 // Send Notification
-void scheduleReminder(DateTime reminderTime, String productName) async {
-  final _randomiser = new Random();
-  final int randomNumber = _randomiser.nextInt(100);
+void scheduleReminder(
+    DateTime reminderTime, String productName, int notiID) async {
   tz.initializeTimeZones();
   final String currentTimezone = await FlutterNativeTimezone.getLocalTimezone();
   tz.setLocalLocation(tz.getLocation(currentTimezone));
@@ -117,7 +118,7 @@ void scheduleReminder(DateTime reminderTime, String productName) async {
 
   await flutterLocalNotificationPlugin
       .zonedSchedule(
-        randomNumber,
+        notiID,
         'Expiry Reminder',
         'Your $productName is expiring soon!',
         scheduledNotificationDateTime,
@@ -127,4 +128,16 @@ void scheduleReminder(DateTime reminderTime, String productName) async {
         androidAllowWhileIdle: true,
       )
       .whenComplete(() => print('Reminder created for $productName'));
+}
+
+void deleteSpecificScheduledReminder(int id) async {
+  await flutterLocalNotificationPlugin
+      .cancel(id)
+      .whenComplete(() => print('>>>>> This reminder has been deleted. <<<<<'));
+}
+
+void deleteAllScheduledReminder() async {
+  await flutterLocalNotificationPlugin
+      .cancelAll()
+      .whenComplete(() => print('All reminders have been deleted.'));
 }

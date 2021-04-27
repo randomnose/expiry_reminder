@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
@@ -24,6 +26,7 @@ class AddNewReminder extends StatefulWidget {
 class _AddNewReminder extends State<AddNewReminder> {
   File _image;
   final imagePicker = ImagePicker();
+  final _randomiser = new Random();
 
   GlobalKey<FormState> _formKey;
   DateTime reminderTime = DateTime.now().toLocal();
@@ -215,8 +218,9 @@ class _AddNewReminder extends State<AddNewReminder> {
                             if (_formKey.currentState.validate() &&
                                 hasPickedDate == true &&
                                 hasPickedExpiry == true) {
+                                  final int notiID = _randomiser.nextInt(100);
                               scheduleReminder(
-                                  reminderTime, _nameController.text);
+                                  reminderTime, _nameController.text, notiID);
                               if (hasTakenImage == true) {
                                 String fileName = path.basename(_image.path);
                                 StorageReference firebaseStorageRef =
@@ -230,6 +234,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                                 final String imageUrl =
                                     await taskSnapshot.ref.getDownloadURL();
                                 reminderCollection.add({
+                                  'notificationID' : notiID,
                                   'productImage': hasTakenImage ? imageUrl : '',
                                   'productBarcode':
                                       _barcodeController.text == null
@@ -247,6 +252,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                                 }).whenComplete(() => Navigator.pop(context));
                               } else {
                                 reminderCollection.add({
+                                  'notificationID' : notiID,
                                   'productImage': '',
                                   'productBarcode':
                                       _barcodeController.text == null

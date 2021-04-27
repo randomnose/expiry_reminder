@@ -38,7 +38,10 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
           SizedBox(height: 20),
           Divider(height: 20, thickness: 10),
-          _showCompletedItems(context, completedReminders.snapshots())
+          _showCompletedItems(context, completedReminders.snapshots()),
+          TextButton(
+              child: Text('reset all reminders'),
+              onPressed: deleteAllScheduledReminder)
         ],
       ),
     );
@@ -85,26 +88,26 @@ class _HomeState extends State<Home> {
                 itemCount:
                     snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
-                  if (category == 'All' ||
-                      category == 'Fresh' &&
-                          snapshot.data.documents.length != 0) {
-                    try {
-                      print(
-                          '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
-                      if (showDateDifference(snapshot
-                                  .data.documents[index].data['expiryDate']
-                                  .toDate()) <=
-                              0 ||
-                          snapshot.data.documents[index].data['expiryDate']
-                                  .toDate ==
-                              DateTime.now()) {
-                        snapshot.data.documents[index].reference
-                            .updateData({'isExpired': 'Yes'});
+                  if (snapshot.data.documents.length != 0) {
+                    if (category == 'All' || category == 'Fresh') {
+                      try {
+                        print(
+                            '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
+                        if (showDateDifference(snapshot
+                                    .data.documents[index].data['expiryDate']
+                                    .toDate()) <=
+                                0 ||
+                            snapshot.data.documents[index].data['expiryDate']
+                                    .toDate ==
+                                DateTime.now()) {
+                          snapshot.data.documents[index].reference
+                              .updateData({'isExpired': 'Yes'});
+                        }
+                      } catch (e) {
+                        print(e.toString());
+                        print(snapshot.data.documents[index].data['expiryDate']
+                            .toDate());
                       }
-                    } catch (e) {
-                      print(e.toString());
-                      print(snapshot.data.documents[index].data['expiryDate']
-                          .toDate());
                     }
                   }
                   if (category == 'All') {
