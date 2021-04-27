@@ -4,7 +4,30 @@ import 'package:expiry_reminder/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
-void main() {
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationPlugin =
+    FlutterLocalNotificationsPlugin();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  var initialisationSettingsAndroid =
+      AndroidInitializationSettings('logo_no_name');
+  var initialisationSettingsIOS = IOSInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      onDidReceiveLocalNotification:
+          (int id, String title, String body, String payload) async {});
+  var initialisationSettings = InitializationSettings(
+      android: initialisationSettingsAndroid, iOS: initialisationSettingsIOS);
+  await flutterLocalNotificationPlugin.initialize(initialisationSettings,
+      onSelectNotification: (String payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: ' + payload);
+    }
+  });
   runApp(MyApp());
 }
 

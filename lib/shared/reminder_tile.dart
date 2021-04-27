@@ -109,7 +109,7 @@ class _ReminderTileState extends State<ReminderTile> {
             widget.documentRef.data['reminderName'],
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: Text('Expiring on' +
+          subtitle: Text('Expiring on: ' +
               dateFormat
                   .format(widget.documentRef.data['expiryDate'].toDate())),
         ),

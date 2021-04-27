@@ -215,6 +215,8 @@ class _AddNewReminder extends State<AddNewReminder> {
                             if (_formKey.currentState.validate() &&
                                 hasPickedDate == true &&
                                 hasPickedExpiry == true) {
+                              scheduleReminder(
+                                  reminderTime, _nameController.text);
                               if (hasTakenImage == true) {
                                 String fileName = path.basename(_image.path);
                                 StorageReference firebaseStorageRef =
