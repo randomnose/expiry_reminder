@@ -105,7 +105,7 @@ class _RegisterState extends State<Register> {
                             SizedBox(height: 20.0),
                             ButtonTheme(
                               minWidth: Get.width * 0.6,
-                              height: 40,
+                              height: 50,
                               child: RaisedButton(
                                   shape: RoundedRectangleBorder(
                                       borderRadius:

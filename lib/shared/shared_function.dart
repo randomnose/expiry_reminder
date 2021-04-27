@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mailgun/mailgun.dart';
@@ -45,7 +43,7 @@ deleteReminder(DocumentSnapshot docToDelete, bool ifCompletelyDelete) async {
 }
 
 // ----------------------------------------------------------------------------
-// TODO: send email notification
+// Function to send email notification (ICEBOX)
 // get product name, and expiry date using the following method:
 // forEach reminder, if reminderDate <= DateTime.now(),
 // then append the product name and expiry date into a dynamic list.
@@ -140,4 +138,11 @@ void deleteAllScheduledReminder() async {
   await flutterLocalNotificationPlugin
       .cancelAll()
       .whenComplete(() => print('All reminders have been deleted.'));
+}
+
+int getUniqueRandomNumber() {
+  dynamic randomNumberList = List<int>.generate(1000, (index) => index + 1)
+    ..shuffle();
+
+  return randomNumberList.removeLast();
 }

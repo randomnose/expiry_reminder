@@ -77,7 +77,6 @@ class _HomeState extends State<Home> {
                             color: appRed,
                             fontWeight: FontWeight.bold,
                             fontSize: 20)),
-            // subtitle: Text(length.toString()),
           ),
           expanded: StreamBuilder(
             stream: streamSnapshot,
@@ -157,14 +156,9 @@ class _HomeState extends State<Home> {
         color: Colors.grey[200],
         child: ExpandablePanel(
           header: ListTile(
-            leading: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(left: 7.0),
-                  child: Icon(CupertinoIcons.checkmark_seal, size: 28),
-                ),
-              ],
+            leading: Padding(
+              padding: EdgeInsets.only(left: 7),
+              child: Icon(CupertinoIcons.checkmark_seal, size: 34),
             ),
             title: Text(
               'Completed Items',
