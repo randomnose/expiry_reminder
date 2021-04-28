@@ -38,10 +38,7 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
           SizedBox(height: 20),
           Divider(height: 20, thickness: 10),
-          _showCompletedItems(context, completedReminders.snapshots()),
-          TextButton(
-              child: Text('reset all reminders'),
-              onPressed: deleteAllScheduledReminder)
+          _showCompletedItems(context, completedReminders.snapshots())
         ],
       ),
     );
