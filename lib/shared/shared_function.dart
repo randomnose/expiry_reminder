@@ -43,44 +43,6 @@ deleteReminder(DocumentSnapshot docToDelete, bool ifCompletelyDelete) async {
 }
 
 // ----------------------------------------------------------------------------
-// Function to send email notification (ICEBOX)
-// get product name, and expiry date using the following method:
-// forEach reminder, if reminderDate <= DateTime.now(),
-// then append the product name and expiry date into a dynamic list.
-// email that dynamic list to user's email.
-var mailgun = MailgunMailer(
-  apiKey: "56f7e0602e42e7e38e1b6079028afda1-4b1aa784-71f811ea",
-  domain: "sandboxddbffdb626f447c5bc11b59fcf3405fe.mailgun.org",
-);
-
-// Future sendReminder(String reminderTitle, int due) async {
-//   var response = await mailgun.send(
-//     from:
-//         "Expiry Reminder <mailgun@sandboxddbffdb626f447c5bc11b59fcf3405fe.mailgun.org>",
-//     to: ["er17071143@gmail.com"],
-//     subject: due == 0
-//         ? "Hey, your $reminderTitle is expiring today!"
-//         : "Hey, your $reminderTitle is expiring in $due day(s)!",
-//     text:
-//         "We're glad that you're using our app. Allow us to use this opportunity to let you know that your food: \n $reminderTitle is expiring soon! Don't forget to eat it before it expires. Have a nice day!",
-//   );
-//   print(response.status);
-//   print(response.message);
-// }
-Future sendReminder() async {
-  var response = await mailgun.send(
-    from:
-        "Expiry Reminder <mailgun@sandboxddbffdb626f447c5bc11b59fcf3405fe.mailgun.org>",
-    to: ["er17071143@gmail.com"],
-    subject: "Hey your food is expiring! Don't forget to eat them!",
-    text:
-        "We're glad that you're using our app. Allow us to use this opportunity to let you know that your food is expiring soon! Don't forget to eat it before it expires. Have a nice day!",
-  );
-  print(response.status);
-  print(response.message);
-}
-
-// ----------------------------------------------------------------------------
 // Send Notification
 void scheduleReminder(
     DateTime reminderTime, String productName, int notiID) async {
