@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/loading.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class _EditReminderState extends State<EditReminder> {
   int newNotiID;
 
   bool hasTakenNewImage = false;
+  bool loading = false;
 
   final dateFormat = new DateFormat.yMMMMEEEEd();
   final remindDateFormat = new DateFormat.jms();
@@ -62,257 +64,271 @@ class _EditReminderState extends State<EditReminder> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: CupertinoNavigationBar(
-            actionsForegroundColor: Colors.black,
-            backgroundColor: appGreen,
-            middle: Text(
-              'Edit a Reminder',
-              style: TextStyle(fontSize: 20),
-            ),
-            trailing: Material(
-              color: appGreen,
-              child: IconButton(
-                  icon: Icon(CupertinoIcons.trash),
-                  onPressed: () => deleteReminder(widget.docToEdit, true)
-                      .whenComplete(() => Navigator.pop(context))),
-            )),
-        body: GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-          child: SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.all(20),
-              width: Get.width,
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: Get.width,
-                      padding: EdgeInsets.only(bottom: 5),
-                      height: 200,
-                      child: hasTakenNewImage
-                          ? Image.file(_image)
-                          : imageUrl == ''
-                              ? Image(
-                                  image: AssetImage(
-                                      'assets/image_placeholder.jpg'),
-                                  fit: BoxFit.cover)
-                              : Image.network(imageUrl),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 15.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                            onPressed: getImage,
-                            icon: Icon(CupertinoIcons.photo_camera,
-                                color: appButtonBrown),
-                            label: Text('Take a photo of the product',
-                                style: TextStyle(color: appButtonBrown))),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 20.0),
-                      child: TextFormField(
-                        controller: _nameController,
-                        validator: (formVal) {
-                          if (formVal == null || formVal.isEmpty) {
-                            return 'Product name is needed';
-                          } else {
-                            return null;
-                          }
-                        },
-                        decoration: textInputDecoration.copyWith(
-                            hintText: 'Product Name',
-                            labelText: 'Product Name'),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 20.0),
-                      child: TextFormField(
-                        keyboardType: TextInputType.number,
-                        controller: _barcodeController,
-                        decoration: textInputDecoration.copyWith(
-                            hintText: 'Product Barcode',
-                            labelText: 'Product Barcode'),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 15.0),
-                      child: TextFormField(
-                        controller: _descriptionController,
-                        validator: (formVal) {
-                          if (formVal == null || formVal.isEmpty) {
-                            return 'Product description is needed';
-                          } else {
-                            return null;
-                          }
-                        },
-                        decoration: textInputDecoration.copyWith(
-                            hintText: 'Product Description (mark "-" if none)',
-                            labelText: 'Product Description'),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 10.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Reminding you on:',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(right: 8.0),
-                            child: Text(dateFormat.format(reminderTime) +
-                                ', ' +
-                                remindDateFormat.format(reminderTime)),
-                          ),
-                          InkWell(
-                            child: Icon(CupertinoIcons.calendar),
-                            onTap: () {
-                              _pickReminderTime(context);
-                            },
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 10.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Expiry Date:',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
-                      child: Row(
-                        children: [
-                          Padding(
-                              padding: EdgeInsets.only(right: 8.0),
-                              child: Text(dateFormat.format(expiryDate))),
-                          InkWell(
-                            child: Icon(CupertinoIcons.calendar),
-                            onTap: () {
-                              _pickExpiryDate(context);
-                            },
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Expired? : ${(showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No'}',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
+    return loading
+        ? Loading()
+        : Scaffold(
+            appBar: CupertinoNavigationBar(
+                actionsForegroundColor: Colors.black,
+                backgroundColor: appGreen,
+                middle: Text(
+                  'Edit a Reminder',
+                  style: TextStyle(fontSize: 20),
+                ),
+                trailing: Material(
+                  color: appGreen,
+                  child: IconButton(
+                      icon: Icon(CupertinoIcons.trash),
+                      onPressed: () => deleteReminder(widget.docToEdit, true)
+                          .whenComplete(() => Navigator.pop(context))),
+                )),
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  width: Get.width,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: Get.width,
+                          padding: EdgeInsets.only(bottom: 5),
+                          height: 200,
+                          child: hasTakenNewImage
+                              ? Image.file(_image)
+                              : imageUrl == ''
+                                  ? Image(
+                                      image: AssetImage(
+                                          'assets/image_placeholder.jpg'),
+                                      fit: BoxFit.cover)
+                                  : Image.network(imageUrl),
                         ),
-                      ),
-                    ),
-                    ButtonTheme(
-                      minWidth: Get.width * 0.6,
-                      buttonColor: appButtonBrown,
-                      height: 50,
-                      child: RaisedButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: new BorderRadius.circular(20)),
-                          child: Text('Confirm changes',
-                              style: TextStyle(color: appBgGrey, fontSize: 16)),
-                          onPressed: () async {
-                            if (_formKey.currentState.validate()) {
-                              if (widget.docToEdit.data['reminderDate']
-                                      .toDate() !=
-                                  reminderTime) {
-                                setState(() {
-                                  newNotiID = getUniqueRandomNumber();
-                                  print(
-                                      'newNotiID after randomising is->>>>>> $newNotiID');
-                                  deleteSpecificScheduledReminder(notiID);
-                                  scheduleReminder(reminderTime,
-                                      _nameController.text, newNotiID);
-                                });
-                              }
-                              if (hasTakenNewImage == true) {
-                                String fileName = basename(_image.path);
-                                StorageReference firebaseStorageRef =
-                                    FirebaseStorage.instance
-                                        .ref()
-                                        .child('images/$fileName');
-                                StorageUploadTask uploadTask =
-                                    firebaseStorageRef.putFile(_image);
-                                StorageTaskSnapshot taskSnapshot =
-                                    await uploadTask.onComplete;
-                                final String newImageUrl =
-                                    await taskSnapshot.ref.getDownloadURL();
-                                print("new newNotiID is->>>> $newNotiID");
-                                widget.docToEdit.reference.updateData({
-                                  'notificationID': newNotiID,
-                                  'productImage': newImageUrl,
-                                  'productBarcode':
-                                      _barcodeController.text == null
-                                          ? ''
-                                          : _barcodeController.text.toString(),
-                                  'reminderName': _nameController.text,
-                                  'reminderDate': reminderTime.toLocal(),
-                                  'reminderDesc': _descriptionController.text,
-                                  'isExpired':
-                                      (showDateDifference(expiryDate) <= 0)
-                                          ? 'Yes'
-                                          : 'No',
-                                  'expiryDate': expiryDate.toLocal()
-                                }).whenComplete(() => Navigator.pop(context));
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 15.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                                onPressed: getImage,
+                                icon: Icon(CupertinoIcons.photo_camera,
+                                    color: appButtonBrown),
+                                label: Text('Take a photo of the product',
+                                    style: TextStyle(color: appButtonBrown))),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 20.0),
+                          child: TextFormField(
+                            controller: _nameController,
+                            validator: (formVal) {
+                              if (formVal == null || formVal.isEmpty) {
+                                return 'Product name is needed';
                               } else {
-                                print("new newNotiID is->>>> $newNotiID");
-                                widget.docToEdit.reference.updateData({
-                                  'notificationID': newNotiID,
-                                  'productImage': imageUrl,
-                                  'productBarcode':
-                                      _barcodeController.text == null
-                                          ? ''
-                                          : _barcodeController.text.toString(),
-                                  'reminderName': _nameController.text,
-                                  'reminderDate': reminderTime.toLocal(),
-                                  'reminderDesc': _descriptionController.text,
-                                  'isExpired':
-                                      (showDateDifference(expiryDate) <= 0)
-                                          ? 'Yes'
-                                          : 'No',
-                                  'expiryDate': expiryDate.toLocal()
-                                }).whenComplete(() => Navigator.pop(context));
+                                return null;
                               }
-                            } else {
-                              setState(() {
-                                error =
-                                    'Please check that you have entered all details.';
-                              });
-                              print('Edit page - please check ur details.');
-                            }
-                          }),
+                            },
+                            decoration: textInputDecoration.copyWith(
+                                hintText: 'Product Name',
+                                labelText: 'Product Name'),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 20.0),
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            controller: _barcodeController,
+                            decoration: textInputDecoration.copyWith(
+                                hintText: 'Product Barcode',
+                                labelText: 'Product Barcode'),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 15.0),
+                          child: TextFormField(
+                            controller: _descriptionController,
+                            validator: (formVal) {
+                              if (formVal == null || formVal.isEmpty) {
+                                return 'Product description is needed';
+                              } else {
+                                return null;
+                              }
+                            },
+                            decoration: textInputDecoration.copyWith(
+                                hintText:
+                                    'Product Description (mark "-" if none)',
+                                labelText: 'Product Description'),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 10.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Reminding you on:',
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right: 8.0),
+                                child: Text(dateFormat.format(reminderTime) +
+                                    ', ' +
+                                    remindDateFormat.format(reminderTime)),
+                              ),
+                              InkWell(
+                                child: Icon(CupertinoIcons.calendar),
+                                onTap: () {
+                                  _pickReminderTime(context);
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 10.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Expiry Date:',
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
+                          child: Row(
+                            children: [
+                              Padding(
+                                  padding: EdgeInsets.only(right: 8.0),
+                                  child: Text(dateFormat.format(expiryDate))),
+                              InkWell(
+                                child: Icon(CupertinoIcons.calendar),
+                                onTap: () {
+                                  _pickExpiryDate(context);
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Expired? : ${(showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No'}',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        ButtonTheme(
+                          minWidth: Get.width * 0.6,
+                          buttonColor: appButtonBrown,
+                          height: 50,
+                          child: RaisedButton(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: new BorderRadius.circular(20)),
+                              child: Text('Confirm changes',
+                                  style: TextStyle(
+                                      color: appBgGrey, fontSize: 16)),
+                              onPressed: () async {
+                                if (_formKey.currentState.validate()) {
+                                  setState(() {
+                                    loading = true;
+                                  });
+                                  if (widget.docToEdit.data['reminderDate']
+                                          .toDate() !=
+                                      reminderTime) {
+                                    setState(() {
+                                      newNotiID = getUniqueRandomNumber();
+                                      print(
+                                          'newNotiID after randomising is->>>>>> $newNotiID');
+                                      deleteSpecificScheduledReminder(notiID);
+                                      scheduleReminder(reminderTime,
+                                          _nameController.text, newNotiID);
+                                    });
+                                  }
+                                  if (hasTakenNewImage == true) {
+                                    String fileName = basename(_image.path);
+                                    StorageReference firebaseStorageRef =
+                                        FirebaseStorage.instance
+                                            .ref()
+                                            .child('images/$fileName');
+                                    StorageUploadTask uploadTask =
+                                        firebaseStorageRef.putFile(_image);
+                                    StorageTaskSnapshot taskSnapshot =
+                                        await uploadTask.onComplete;
+                                    final String newImageUrl =
+                                        await taskSnapshot.ref.getDownloadURL();
+                                    print("new newNotiID is->>>> $newNotiID");
+                                    widget.docToEdit.reference.updateData({
+                                      'notificationID': newNotiID,
+                                      'productImage': newImageUrl,
+                                      'productBarcode':
+                                          _barcodeController.text == null
+                                              ? ''
+                                              : _barcodeController.text
+                                                  .toString(),
+                                      'reminderName': _nameController.text,
+                                      'reminderDate': reminderTime.toLocal(),
+                                      'reminderDesc':
+                                          _descriptionController.text,
+                                      'isExpired':
+                                          (showDateDifference(expiryDate) <= 0)
+                                              ? 'Yes'
+                                              : 'No',
+                                      'expiryDate': expiryDate.toLocal()
+                                    }).whenComplete(
+                                        () => Navigator.pop(context));
+                                  } else {
+                                    print("new newNotiID is->>>> $newNotiID");
+                                    widget.docToEdit.reference.updateData({
+                                      'notificationID': newNotiID,
+                                      'productImage': imageUrl,
+                                      'productBarcode':
+                                          _barcodeController.text == null
+                                              ? ''
+                                              : _barcodeController.text
+                                                  .toString(),
+                                      'reminderName': _nameController.text,
+                                      'reminderDate': reminderTime.toLocal(),
+                                      'reminderDesc':
+                                          _descriptionController.text,
+                                      'isExpired':
+                                          (showDateDifference(expiryDate) <= 0)
+                                              ? 'Yes'
+                                              : 'No',
+                                      'expiryDate': expiryDate.toLocal()
+                                    }).whenComplete(
+                                        () => Navigator.pop(context));
+                                  }
+                                } else {
+                                  setState(() {
+                                    error =
+                                        'Please check that you have entered all details.';
+                                    loading = false;
+                                  });
+                                  print('Edit page - please check ur details.');
+                                }
+                              }),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10.0),
+                          child: Text(
+                            error,
+                            style: errorTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10.0),
-                      child: Text(
-                        error,
-                        style: errorTextStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        ));
+            ));
   }
 
   void _pickReminderTime(BuildContext context) {

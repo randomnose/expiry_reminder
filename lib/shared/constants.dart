@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 InputDecoration textInputDecoration = InputDecoration(
@@ -16,6 +17,8 @@ TextStyle whiteTextStyle = TextStyle(fontSize: 16, color: appBgGrey);
 TextStyle greenTextStyle = TextStyle(fontSize: 16, color: appBottomNavGreen);
 TextStyle errorTextStyle = TextStyle(
     fontSize: 18, color: Colors.red[400], fontWeight: FontWeight.w500);
+TextStyle sectionTitle = TextStyle(
+    fontSize: 18, color: CupertinoColors.black, fontWeight: FontWeight.w500);
 
 Color appGreen = Color(0xff93A280);
 Color appRed = Color(0xffD88C8C);

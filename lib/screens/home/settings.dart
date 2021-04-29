@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 // TODO: Settings page should be able to remove all reminders
 class Settings extends StatefulWidget {
@@ -24,63 +25,117 @@ class _SettingsState extends State<Settings> {
         .collection('reminders');
 
     return SingleChildScrollView(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => CupertinoAlertDialog(
-                        title: Text('Delete confirmation'),
-                        content: Text(
-                            'Deleting all scheduled notifications is a non-reversible action.'),
-                        actions: [
-                          CupertinoDialogAction(
-                              child: Text('Confirm'),
-                              isDestructiveAction: true,
-                              onPressed: () {
-                                deleteAllScheduledReminder();
-                                Navigator.pop(context);
-                              }),
-                          CupertinoDialogAction(
-                              child: Text('Cancel'),
-                              onPressed: () => Navigator.pop(context))
-                        ],
-                      ));
-            },
-            child: Text('Delete all scheduled notifications')),
-        TextButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => CupertinoAlertDialog(
-                        title: Text('Delete confirmation'),
-                        content: Text(
-                            'Deleting all active reminders is a non-reversible action.'),
-                        actions: [
-                          CupertinoDialogAction(
-                            child: Text('Confirm'),
-                            onPressed: () async {
-                              deleteAllEntries(reminderRef);
-                              Navigator.pop(context);
-                            },
-                            isDestructiveAction: true,
-                          ),
-                          CupertinoDialogAction(
-                              child: Text('Cancel'),
-                              onPressed: () => Navigator.pop(context))
-                        ],
-                      ));
-            },
-            child: Text('Delete all active reminders')),
-        TextButton(
-          child: Text('Logout', style: TextStyle(color: appButtonBrown)),
-          onPressed: () async {
-            await _auth.signOut();
-          },
-        )
-      ],
+        child: Padding(
+      padding: EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              'Destructive operations:',
+              style: sectionTitle,
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.red[400], width: 2.5),
+                // gradient: LinearGradient(
+                //     begin: Alignment.bottomLeft,
+                //     end: Alignment.topRight,
+                //     colors: [appRed, Colors.red[50]]),
+                borderRadius: BorderRadius.all(Radius.circular(8))),
+            width: Get.width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(bottom: 5.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Delete all scheduled notifications'),
+                      RaisedButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  CupertinoAlertDialog(
+                                    title: Text(
+                                        'Delete all scheduled notification?'),
+                                    content: Text(
+                                        'Deleting all scheduled notifications is a non-reversible action.'),
+                                    actions: [
+                                      CupertinoDialogAction(
+                                          child: Text('Confirm'),
+                                          isDestructiveAction: true,
+                                          onPressed: () {
+                                            deleteAllScheduledReminder();
+                                            Navigator.pop(context);
+                                          }),
+                                      CupertinoDialogAction(
+                                          child: Text('Cancel'),
+                                          onPressed: () => Navigator.pop(context))
+                                    ],
+                                  ));
+                        },
+                        child: Text(
+                          'Delete',
+                          style: errorTextStyle.copyWith(fontSize: 16),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Delete all active reminders'),
+                    RaisedButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  CupertinoAlertDialog(
+                                    title: Text('Delete all reminders?'),
+                                    content: Text(
+                                        'Deleting all active reminders is a non-reversible action.'),
+                                    actions: [
+                                      CupertinoDialogAction(
+                                        child: Text('Confirm'),
+                                        onPressed: () async {
+                                          deleteAllEntries(reminderRef);
+                                          Navigator.pop(context);
+                                        },
+                                        isDestructiveAction: true,
+                                      ),
+                                      CupertinoDialogAction(
+                                          child: Text('Cancel'),
+                                          onPressed: () =>
+                                              Navigator.pop(context))
+                                    ],
+                                  ));
+                        },
+                        child: Text('Delete',
+                            style: errorTextStyle.copyWith(fontSize: 16)))
+                  ],
+                ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+              label:
+                  Text('Log Out', style: errorTextStyle),
+              onPressed: () async {
+                await _auth.signOut();
+              },
+              icon: Icon(
+                Icons.logout,
+                color: Colors.red[400],
+              ))
+        ],
+      ),
     ));
   }
 
