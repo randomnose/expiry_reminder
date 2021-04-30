@@ -12,8 +12,7 @@ import 'package:get/get.dart';
 class ReminderTile extends StatefulWidget {
   final DocumentSnapshot documentRef;
   final String popUpPrimaryMessage;
-  final bool isCompleted;
-  const ReminderTile({Key key, this.documentRef, this.popUpPrimaryMessage, this.isCompleted})
+  const ReminderTile({Key key, this.documentRef, this.popUpPrimaryMessage})
       : super(key: key);
 
   @override
@@ -25,8 +24,6 @@ class _ReminderTileState extends State<ReminderTile> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User>(context);
-    final reminderRef =
-        Firestore.instance.collection('appUsers').document(user.uid).collection('reminders');
 
     final completedReminders = Firestore.instance
         .collection('appUsers')
@@ -46,35 +43,21 @@ class _ReminderTileState extends State<ReminderTile> {
                           CupertinoActionSheetAction(
                               isDefaultAction: true,
                               onPressed: () {
-                                if (widget.isCompleted == true) {
-                                  reminderRef
-                                      .add({
-                                        'notificationID': widget.documentRef.data['notificationID'],
-                                        'productImage': widget.documentRef.data['productImage'],
-                                        'productBarcode': widget.documentRef.data['productBarcode'],
-                                        'reminderName': widget.documentRef.data['reminderName'],
-                                        'reminderDate': widget.documentRef.data['reminderDate'],
-                                        'reminderDesc': widget.documentRef.data['reminderDesc'],
-                                        'isExpired': widget.documentRef.data['isExpired'],
-                                        'expiryDate': widget.documentRef.data['expiryDate'],
-                                      })
-                                      .whenComplete(() => deleteReminder(widget.documentRef, false))
-                                      .whenComplete(() => Navigator.pop(context));
-                                } else {
-                                  completedReminders
-                                      .add({
-                                        'notificationID': widget.documentRef.data['notificationID'],
-                                        'productImage': widget.documentRef.data['productImage'],
-                                        'productBarcode': widget.documentRef.data['productBarcode'],
-                                        'reminderName': widget.documentRef.data['reminderName'],
-                                        'reminderDate': widget.documentRef.data['reminderDate'],
-                                        'reminderDesc': widget.documentRef.data['reminderDesc'],
-                                        'isExpired': widget.documentRef.data['isExpired'],
-                                        'expiryDate': widget.documentRef.data['expiryDate'],
-                                      })
-                                      .whenComplete(() => deleteReminder(widget.documentRef, false))
-                                      .whenComplete(() => Navigator.pop(context));
-                                }
+                                deleteSpecificScheduledReminder(
+                                    widget.documentRef.data['notificationID']);
+                                completedReminders
+                                    .add({
+                                      'notificationID': widget.documentRef.data['notificationID'],
+                                      'productImage': widget.documentRef.data['productImage'],
+                                      'productBarcode': widget.documentRef.data['productBarcode'],
+                                      'reminderName': widget.documentRef.data['reminderName'],
+                                      'reminderDate': widget.documentRef.data['reminderDate'],
+                                      'reminderDesc': widget.documentRef.data['reminderDesc'],
+                                      'isExpired': widget.documentRef.data['isExpired'],
+                                      'expiryDate': widget.documentRef.data['expiryDate'],
+                                    })
+                                    .whenComplete(() => deleteReminder(widget.documentRef, false))
+                                    .whenComplete(() => Navigator.pop(context));
                               },
                               child: Text(widget.popUpPrimaryMessage)),
                           CupertinoActionSheetAction(

@@ -42,7 +42,7 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
           Divider(height: 20, thickness: 10),
           _showCompletedItems(context, completedReminders.snapshots()),
-          SizedBox(height: 40)
+          // SizedBox(height: 40)
         ],
       ),
     );
@@ -68,13 +68,13 @@ class _HomeState extends State<Home> {
             stream: streamSnapshot,
             builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
               return ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
                   if (snapshot.data.documents.length != 0) {
                     if (category == 'Fresh') {
                       try {
-                        // TODO: this is too inefficient, need to figure another way to refresh it.
                         print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
                         if (showDateDifference(
                                     snapshot.data.documents[index].data['expiryDate'].toDate()) <=
@@ -94,7 +94,6 @@ class _HomeState extends State<Home> {
                     return ReminderTile(
                       documentRef: snapshot.data.documents[index],
                       popUpPrimaryMessage: 'Mark as complete',
-                      isCompleted: false,
                     );
                   } else {
                     if (category != 'All' &&
@@ -103,7 +102,6 @@ class _HomeState extends State<Home> {
                       return ReminderTile(
                         documentRef: snapshot.data.documents[index],
                         popUpPrimaryMessage: 'Mark as complete',
-                        isCompleted: false,
                       );
                     } else {
                       return Container();
@@ -140,8 +138,8 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        SizedBox(
-          height: 200,
+        Container(
+          height: Get.height * 0.5,
           child: StreamBuilder(
             key: UniqueKey(),
             stream: streamSnapshot,
@@ -151,7 +149,7 @@ class _HomeState extends State<Home> {
               return snapshot.data.documents.length != 0
                   ? new ListView.builder(
                       key: UniqueKey(),
-                      scrollDirection: Axis.horizontal,
+                      scrollDirection: Axis.vertical,
                       itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
                       controller: PageController(viewportFraction: 0.7),
                       // onPageChanged: (int newIndex) =>
@@ -170,6 +168,18 @@ class _HomeState extends State<Home> {
                                         CupertinoActionSheetAction(
                                             isDefaultAction: true,
                                             onPressed: () {
+                                              if (showDateDifference(snapshot
+                                                      .data.documents[index].data['reminderDate']
+                                                      .toDate()) >
+                                                  0) {
+                                                scheduleReminder(
+                                                    snapshot
+                                                        .data.documents[index].data['reminderDate']
+                                                        .toDate(),
+                                                    snapshot
+                                                        .data.documents[index].data['reminderName'],
+                                                    getUniqueRandomNumber());
+                                              }
                                               reminderRef
                                                   .add({
                                                     'notificationID': snapshot.data.documents[index]
@@ -208,13 +218,13 @@ class _HomeState extends State<Home> {
                                     ));
                           },
                           child: Container(
-                            padding: EdgeInsets.only(left: 10),
-                            width: 200,
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            height: 270,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  height: 130,
+                                  height: 200,
                                   decoration: BoxDecoration(
                                       image:
                                           snapshot.data.documents[index].data['productImage'] == ''
@@ -229,7 +239,7 @@ class _HomeState extends State<Home> {
                                       border: Border.all(color: Colors.grey)),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.fromLTRB(8, 10, 8, 5),
+                                  padding: EdgeInsets.fromLTRB(8, 5, 8, 5),
                                   child: Text(
                                     snapshot.data.documents[index].data['reminderName'],
                                     style: errorTextStyle.copyWith(color: appBottomNavGreen),
@@ -266,9 +276,12 @@ class _HomeState extends State<Home> {
                         );
                       })
                   : Align(
-                      alignment: AlignmentDirectional.center,
-                      child: Text('There is no completed reminders.',
-                          style: errorTextStyle.copyWith(color: appBottomNavGreen)),
+                      alignment: AlignmentDirectional.topCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 20.0),
+                        child: Text('There is no completed reminders.',
+                            style: errorTextStyle.copyWith(color: appBottomNavGreen)),
+                      ),
                     );
             },
           ),

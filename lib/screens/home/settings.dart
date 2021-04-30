@@ -8,7 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
-// TODO: Settings page should be able to remove all reminders
 class Settings extends StatefulWidget {
   @override
   _SettingsState createState() => _SettingsState();
@@ -124,9 +123,11 @@ class _SettingsState extends State<Settings> {
               ],
             ),
           ),
+          SizedBox(height: 15),
+          Divider(thickness: 2),
           TextButton.icon(
               label:
-                  Text('Log Out', style: errorTextStyle),
+                  Text('Log Out', style: errorTextStyle.copyWith(fontSize: 16)),
               onPressed: () async {
                 await _auth.signOut();
               },
