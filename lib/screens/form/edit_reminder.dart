@@ -42,12 +42,9 @@ class _EditReminderState extends State<EditReminder> {
   @override
   void initState() {
     _formKey = GlobalKey<FormState>();
-    _nameController =
-        TextEditingController(text: widget.docToEdit.data['reminderName']);
-    _descriptionController =
-        TextEditingController(text: widget.docToEdit.data['reminderDesc']);
-    _barcodeController =
-        TextEditingController(text: widget.docToEdit.data['productBarcode']);
+    _nameController = TextEditingController(text: widget.docToEdit.data['reminderName']);
+    _descriptionController = TextEditingController(text: widget.docToEdit.data['reminderDesc']);
+    _barcodeController = TextEditingController(text: widget.docToEdit.data['productBarcode']);
     reminderTime = widget.docToEdit.data['reminderDate'].toDate();
     expiryDate = widget.docToEdit.data['expiryDate'].toDate();
     imageUrl = widget.docToEdit.data['productImage'];
@@ -64,6 +61,8 @@ class _EditReminderState extends State<EditReminder> {
 
   @override
   Widget build(BuildContext context) {
+    bool isKeebActive = MediaQuery.of(context).viewInsets.bottom != 0.0;
+
     return loading
         ? Loading()
         : Scaffold(
@@ -93,17 +92,20 @@ class _EditReminderState extends State<EditReminder> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(color: appListTileGrey),
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: hasTakenNewImage
+                                    ? FileImage(_image)
+                                    : imageUrl == ''
+                                        ? AssetImage('assets/image_placeholder.jpg')
+                                        : NetworkImage(imageUrl),
+                              )),
                           width: Get.width,
                           padding: EdgeInsets.only(bottom: 5),
                           height: 200,
-                          child: hasTakenNewImage
-                              ? Image.file(_image)
-                              : imageUrl == ''
-                                  ? Image(
-                                      image: AssetImage(
-                                          'assets/image_placeholder.jpg'),
-                                      fit: BoxFit.cover)
-                                  : Image.network(imageUrl),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 15.0),
@@ -111,8 +113,7 @@ class _EditReminderState extends State<EditReminder> {
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
                                 onPressed: getImage,
-                                icon: Icon(CupertinoIcons.photo_camera,
-                                    color: appButtonBrown),
+                                icon: Icon(CupertinoIcons.photo_camera, color: appButtonBrown),
                                 label: Text('Take a photo of the product',
                                     style: TextStyle(color: appButtonBrown))),
                           ),
@@ -120,6 +121,9 @@ class _EditReminderState extends State<EditReminder> {
                         Padding(
                           padding: EdgeInsets.only(bottom: 20.0),
                           child: TextFormField(
+                            minLines: 1,
+                            maxLines: 5,
+                            keyboardType: TextInputType.multiline,
                             controller: _nameController,
                             validator: (formVal) {
                               if (formVal == null || formVal.isEmpty) {
@@ -129,35 +133,43 @@ class _EditReminderState extends State<EditReminder> {
                               }
                             },
                             decoration: textInputDecoration.copyWith(
-                                hintText: 'Product Name',
-                                labelText: 'Product Name'),
+                                hintText: 'Enter product name here.',
+                                labelText: 'Product name',
+                                suffixIcon: IconButton(
+                                  icon: Icon(CupertinoIcons.clear),
+                                  onPressed: () => _nameController.clear(),
+                                )),
                           ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 20.0),
                           child: TextFormField(
+                            maxLines: 1,
                             keyboardType: TextInputType.number,
                             controller: _barcodeController,
                             decoration: textInputDecoration.copyWith(
-                                hintText: 'Product Barcode',
-                                labelText: 'Product Barcode'),
+                                labelText: 'Product Barcode (Optional)',
+                                hintText: 'Enter product barcode here.',
+                                suffixIcon: IconButton(
+                                  icon: Icon(CupertinoIcons.clear),
+                                  onPressed: () => _barcodeController.clear(),
+                                )),
                           ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 15.0),
                           child: TextFormField(
+                            keyboardType: TextInputType.multiline,
+                            minLines: 1,
+                            maxLines: 5,
                             controller: _descriptionController,
-                            validator: (formVal) {
-                              if (formVal == null || formVal.isEmpty) {
-                                return 'Product description is needed';
-                              } else {
-                                return null;
-                              }
-                            },
                             decoration: textInputDecoration.copyWith(
-                                hintText:
-                                    'Product Description (mark "-" if none)',
-                                labelText: 'Product Description'),
+                                labelText: 'Product Description (Optional)',
+                                hintText: 'Enter product descripton here.',
+                                suffixIcon: IconButton(
+                                  icon: Icon(CupertinoIcons.clear),
+                                  onPressed: () => _descriptionController.clear(),
+                                )),
                           ),
                         ),
                         Padding(
@@ -165,8 +177,7 @@ class _EditReminderState extends State<EditReminder> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text('Reminding you on:',
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.bold)),
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
                         Padding(
@@ -181,9 +192,7 @@ class _EditReminderState extends State<EditReminder> {
                               ),
                               InkWell(
                                 child: Icon(CupertinoIcons.calendar),
-                                onTap: () {
-                                  _pickReminderTime(context);
-                                },
+                                onTap: () => _pickReminderTime(context),
                               )
                             ],
                           ),
@@ -193,8 +202,7 @@ class _EditReminderState extends State<EditReminder> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text('Expiry Date:',
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.bold)),
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
                         Padding(
@@ -206,121 +214,19 @@ class _EditReminderState extends State<EditReminder> {
                                   child: Text(dateFormat.format(expiryDate))),
                               InkWell(
                                 child: Icon(CupertinoIcons.calendar),
-                                onTap: () {
-                                  _pickExpiryDate(context);
-                                },
+                                onTap: () => _pickExpiryDate(context),
                               )
                             ],
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(bottom: 10.0, left: 10.0),
+                          padding: EdgeInsets.only(bottom: 60.0, left: 10.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Expired? : ${(showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No'}',
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
+                              'Expiry Status : ${(showDateDifference(expiryDate) <= 0) ? 'Expired' : 'Fresh'}',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ),
-                        ButtonTheme(
-                          minWidth: Get.width * 0.6,
-                          buttonColor: appButtonBrown,
-                          height: 50,
-                          child: RaisedButton(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: new BorderRadius.circular(20)),
-                              child: Text('Confirm changes',
-                                  style: TextStyle(
-                                      color: appBgGrey, fontSize: 16)),
-                              onPressed: () async {
-                                if (_formKey.currentState.validate()) {
-                                  setState(() {
-                                    loading = true;
-                                  });
-                                  if (widget.docToEdit.data['reminderDate']
-                                          .toDate() !=
-                                      reminderTime) {
-                                    setState(() {
-                                      newNotiID = getUniqueRandomNumber();
-                                      print(
-                                          'newNotiID after randomising is->>>>>> $newNotiID');
-                                      deleteSpecificScheduledReminder(notiID);
-                                      scheduleReminder(reminderTime,
-                                          _nameController.text, newNotiID);
-                                    });
-                                  }
-                                  if (hasTakenNewImage == true) {
-                                    String fileName = basename(_image.path);
-                                    StorageReference firebaseStorageRef =
-                                        FirebaseStorage.instance
-                                            .ref()
-                                            .child('images/$fileName');
-                                    StorageUploadTask uploadTask =
-                                        firebaseStorageRef.putFile(_image);
-                                    StorageTaskSnapshot taskSnapshot =
-                                        await uploadTask.onComplete;
-                                    final String newImageUrl =
-                                        await taskSnapshot.ref.getDownloadURL();
-                                    print("new newNotiID is->>>> $newNotiID");
-                                    widget.docToEdit.reference.updateData({
-                                      'notificationID': newNotiID,
-                                      'productImage': newImageUrl,
-                                      'productBarcode':
-                                          _barcodeController.text == null
-                                              ? ''
-                                              : _barcodeController.text
-                                                  .toString(),
-                                      'reminderName': _nameController.text,
-                                      'reminderDate': reminderTime.toLocal(),
-                                      'reminderDesc':
-                                          _descriptionController.text,
-                                      'isExpired':
-                                          (showDateDifference(expiryDate) <= 0)
-                                              ? 'Yes'
-                                              : 'No',
-                                      'expiryDate': expiryDate.toLocal()
-                                    }).whenComplete(
-                                        () => Navigator.pop(context));
-                                  } else {
-                                    print("new newNotiID is->>>> $newNotiID");
-                                    widget.docToEdit.reference.updateData({
-                                      'notificationID': newNotiID,
-                                      'productImage': imageUrl,
-                                      'productBarcode':
-                                          _barcodeController.text == null
-                                              ? ''
-                                              : _barcodeController.text
-                                                  .toString(),
-                                      'reminderName': _nameController.text,
-                                      'reminderDate': reminderTime.toLocal(),
-                                      'reminderDesc':
-                                          _descriptionController.text,
-                                      'isExpired':
-                                          (showDateDifference(expiryDate) <= 0)
-                                              ? 'Yes'
-                                              : 'No',
-                                      'expiryDate': expiryDate.toLocal()
-                                    }).whenComplete(
-                                        () => Navigator.pop(context));
-                                  }
-                                } else {
-                                  setState(() {
-                                    error =
-                                        'Please check that you have entered all details.';
-                                    loading = false;
-                                  });
-                                  print('Edit page - please check ur details.');
-                                }
-                              }),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10.0),
-                          child: Text(
-                            error,
-                            style: errorTextStyle,
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],
@@ -328,7 +234,55 @@ class _EditReminderState extends State<EditReminder> {
                   ),
                 ),
               ),
-            ));
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Visibility(
+              visible: isKeebActive ? false : true,
+              child: FloatingActionButton.extended(
+                  splashColor: appButtonBrown.withAlpha(70),
+                  backgroundColor: appButtonBrown,
+                  onPressed: () async {
+                    if (_formKey.currentState.validate()) {
+                      setState(() => loading = true);
+                      if (widget.docToEdit.data['reminderDate'].toDate() != reminderTime) {
+                        setState(() {
+                          newNotiID = getUniqueRandomNumber();
+                          print('newNotiID after randomising is->>>>>> $newNotiID');
+                          deleteSpecificScheduledReminder(notiID);
+                          scheduleReminder(reminderTime, _nameController.text, newNotiID);
+                        });
+                      }
+                      final String newImageUrl =
+                          hasTakenNewImage ? await uploadImageToFirebase() : imageUrl;
+                      print("new newNotiID is->>>> $newNotiID");
+                      widget.docToEdit.reference.updateData({
+                        'notificationID': newNotiID,
+                        'productImage': newImageUrl,
+                        'productBarcode': _barcodeController.text,
+                        'reminderName': _nameController.text,
+                        'reminderDate': reminderTime.toLocal(),
+                        'reminderDesc': _descriptionController.text,
+                        'isExpired': (showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No',
+                        'expiryDate': expiryDate.toLocal()
+                      }).whenComplete(() => Navigator.pop(context));
+                    } else {
+                      setState(() => loading = false);
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) => CupertinoAlertDialog(
+                                title: Text('Oops!'),
+                                content: Text(
+                                    'You may have missed out one or more fields required to create a reminder.'),
+                                actions: [
+                                  CupertinoDialogAction(
+                                      child: Text('OK'), onPressed: () => Navigator.pop(context)),
+                                ],
+                              ));
+                    }
+                  },
+                  label: Text('Confirm changes')),
+            ),
+          );
   }
 
   void _pickReminderTime(BuildContext context) {
@@ -342,24 +296,20 @@ class _EditReminderState extends State<EditReminder> {
                   Container(
                     height: 400,
                     child: CupertinoDatePicker(
+                      minimumDate: DateTime.now().add(Duration(minutes: 1)),
                       mode: CupertinoDatePickerMode.dateAndTime,
                       initialDateTime: reminderTime,
                       onDateTimeChanged: (changedDate) {
-                        setState(() {
-                          reminderTime = changedDate;
-                        });
+                        setState(() => reminderTime = changedDate);
                       },
                     ),
                   ),
                   CupertinoButton(
                       child: Text(
                         'Confirm',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      })
+                      onPressed: () => Navigator.pop(context))
                 ],
               ),
             ));
@@ -379,21 +329,16 @@ class _EditReminderState extends State<EditReminder> {
                       mode: CupertinoDatePickerMode.date,
                       initialDateTime: expiryDate,
                       onDateTimeChanged: (changedDate) {
-                        setState(() {
-                          expiryDate = changedDate;
-                        });
+                        setState(() => expiryDate = changedDate);
                       },
                     ),
                   ),
                   CupertinoButton(
                       child: Text(
                         'Confirm',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      })
+                      onPressed: () => Navigator.pop(context))
                 ],
               ),
             ));
@@ -407,14 +352,12 @@ class _EditReminderState extends State<EditReminder> {
     });
   }
 
-  // uploadImageToFirebase() async {
-  //   String fileName = basename(_image.path);
-  //   StorageReference firebaseStorageRef =
-  //       FirebaseStorage.instance.ref().child('images/$fileName');
-  //   StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
-  //   StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-  //   final String newImageUrl = await taskSnapshot.ref.getDownloadURL();
-
-  //   return newImageUrl;
-  // }
+  Future<String> uploadImageToFirebase() async {
+    String fileName = basename(_image.path);
+    StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/$fileName');
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    final String newImageUrl = await taskSnapshot.ref.getDownloadURL();
+    return newImageUrl;
+  }
 }

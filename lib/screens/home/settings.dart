@@ -18,10 +18,8 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     final AuthService _auth = AuthService();
     final user = Provider.of<User>(context);
-    final reminderRef = Firestore.instance
-        .collection('appUsers')
-        .document(user.uid)
-        .collection('reminders');
+    final reminderRef =
+        Firestore.instance.collection('appUsers').document(user.uid).collection('reminders');
 
     return SingleChildScrollView(
         child: Padding(
@@ -40,10 +38,6 @@ class _SettingsState extends State<Settings> {
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.red[400], width: 2.5),
-                // gradient: LinearGradient(
-                //     begin: Alignment.bottomLeft,
-                //     end: Alignment.topRight,
-                //     colors: [appRed, Colors.red[50]]),
                 borderRadius: BorderRadius.all(Radius.circular(8))),
             width: Get.width,
             child: Column(
@@ -59,10 +53,8 @@ class _SettingsState extends State<Settings> {
                         onPressed: () {
                           showDialog(
                               context: context,
-                              builder: (BuildContext context) =>
-                                  CupertinoAlertDialog(
-                                    title: Text(
-                                        'Delete all scheduled notification?'),
+                              builder: (BuildContext context) => CupertinoAlertDialog(
+                                    title: Text('Delete all scheduled notification?'),
                                     content: Text(
                                         'Deleting all scheduled notifications is a non-reversible action.'),
                                     actions: [
@@ -95,8 +87,7 @@ class _SettingsState extends State<Settings> {
                         onPressed: () {
                           showDialog(
                               context: context,
-                              builder: (BuildContext context) =>
-                                  CupertinoAlertDialog(
+                              builder: (BuildContext context) => CupertinoAlertDialog(
                                     title: Text('Delete all reminders?'),
                                     content: Text(
                                         'Deleting all active reminders is a non-reversible action.'),
@@ -111,13 +102,11 @@ class _SettingsState extends State<Settings> {
                                       ),
                                       CupertinoDialogAction(
                                           child: Text('Cancel'),
-                                          onPressed: () =>
-                                              Navigator.pop(context))
+                                          onPressed: () => Navigator.pop(context))
                                     ],
                                   ));
                         },
-                        child: Text('Delete',
-                            style: errorTextStyle.copyWith(fontSize: 16)))
+                        child: Text('Delete', style: errorTextStyle.copyWith(fontSize: 16)))
                   ],
                 ),
               ],
@@ -126,8 +115,7 @@ class _SettingsState extends State<Settings> {
           SizedBox(height: 15),
           Divider(thickness: 2),
           TextButton.icon(
-              label:
-                  Text('Log Out', style: errorTextStyle.copyWith(fontSize: 16)),
+              label: Text('Log Out', style: errorTextStyle.copyWith(fontSize: 16)),
               onPressed: () async {
                 await _auth.signOut();
               },
@@ -144,7 +132,7 @@ class _SettingsState extends State<Settings> {
     await collection.getDocuments().then((snapshot) {
       if (snapshot.documents.length != 0) {
         for (DocumentSnapshot doc in snapshot.documents) {
-          doc.reference.delete().whenComplete(() {
+          deleteReminder(doc, true).whenComplete(() {
             print('All active reminders have been deleted.');
             showDialog(
                 context: context,
