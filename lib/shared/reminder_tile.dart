@@ -75,7 +75,7 @@ class _ReminderTileState extends State<ReminderTile> {
             leading: CircleAvatar(
               backgroundColor: Colors.grey[400],
               radius: 25,
-              backgroundImage: widget.documentRef.data['productImage'] == ''
+              backgroundImage: widget.documentRef.data['productImage'] == null
                   ? AssetImage(
                       'assets/image_placeholder.jpg',
                     )

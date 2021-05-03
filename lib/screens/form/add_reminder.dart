@@ -1,5 +1,6 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/image_widget.dart';
 import 'package:expiry_reminder/shared/loading.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +14,6 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
-import 'package:firebase_storage/firebase_storage.dart';
 
 // TODO: allow user to add quantity for their entry of reminders.
 class AddNewReminder extends StatefulWidget {
@@ -89,26 +88,60 @@ class _AddNewReminder extends State<AddNewReminder> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: appListTileGrey),
-                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: _image == null
-                                    ? AssetImage('assets/image_placeholder.jpg')
-                                    : FileImage(_image),
-                              )),
-                          width: Get.width,
-                          padding: EdgeInsets.only(bottom: 5),
-                          height: 170,
+                        InkWell(
+                          onTap: hasTakenImage
+                              ? () => showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      clipBehavior: Clip.antiAlias,
+                                      contentPadding: EdgeInsets.all(0),
+                                      content: Image.file(_image),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20)),
+                                      actions: [
+                                        FlatButton(
+                                            splashColor: appGreen,
+                                            onPressed: () {
+                                              setState(() {
+                                                _image = null;
+                                              });
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text('Remove',
+                                                style: TextStyle(color: appButtonBrown)),
+                                            minWidth: Get.width)
+                                      ],
+                                    );
+                                  })
+                              : () {},
+                          child: Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(color: appListTileGrey),
+                                borderRadius: BorderRadius.all(Radius.circular(8)),
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: _image == null
+                                      ? AssetImage('assets/image_placeholder.jpg')
+                                      : FileImage(_image),
+                                )),
+                            width: Get.width,
+                            padding: EdgeInsets.only(bottom: 5),
+                            height: 170,
+                          ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 15.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
-                                onPressed: getImage,
+                                onPressed: () async {
+                                  var tempImg = await ImageWidget.getImage();
+                                  setState(() {
+                                    _image = tempImg;
+                                    hasTakenImage = true;
+                                  });
+                                },
                                 icon: Icon(CupertinoIcons.photo_camera, color: appButtonBrown),
                                 label: Text(
                                   'Take a photo of the product',
@@ -130,7 +163,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                           },
                           decoration: textInputDecoration.copyWith(
                               hintText: 'Enter product name here.',
-                              labelText: 'Product Name',
+                              labelText: 'Product Name (Required)',
                               suffixIcon: IconButton(
                                 icon: Icon(CupertinoIcons.clear),
                                 onPressed: () => _nameController.clear(),
@@ -182,7 +215,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                           padding: EdgeInsets.only(left: 10.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Reminding you on:',
+                            child: Text('Reminding you on: (Required)',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
@@ -215,7 +248,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                           padding: EdgeInsets.only(left: 10.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Expiry Date:',
+                            child: Text('Expiry Date: (Required)',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
@@ -272,7 +305,9 @@ class _AddNewReminder extends State<AddNewReminder> {
                       setState(() => loading = true);
                       final int notiID = getUniqueRandomNumber();
                       scheduleReminder(reminderTime, _nameController.text, notiID);
-                      final String imageUrl = hasTakenImage ? await uploadImageToFirebase() : '';
+                      final String imageUrl = _image != null
+                          ? await ImageWidget.uploadImageToFirebase(_image, false)
+                          : null;
                       reminderCollection.add({
                         'notificationID': notiID,
                         'productImage': imageUrl,
@@ -421,24 +456,5 @@ class _AddNewReminder extends State<AddNewReminder> {
                 ],
               ),
             ));
-  }
-
-  Future getImage() async {
-    final image =
-        await imagePicker.getImage(source: ImageSource.camera, maxWidth: 500, maxHeight: 500);
-    setState(() {
-      _image = File(image.path);
-      hasTakenImage = true;
-    });
-  }
-
-  Future<String> uploadImageToFirebase() async {
-    String fileName = path.basename(_image.path);
-    StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/$fileName');
-    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
-    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-    final String imageUrl = await taskSnapshot.ref.getDownloadURL();
-
-    return imageUrl;
   }
 }

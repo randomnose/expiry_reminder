@@ -59,15 +59,16 @@ class _SettingsState extends State<Settings> {
                                         'Deleting all scheduled notifications is a non-reversible action.'),
                                     actions: [
                                       CupertinoDialogAction(
+                                          isDefaultAction: true,
+                                          child: Text('Cancel'),
+                                          onPressed: () => Navigator.pop(context)),
+                                      CupertinoDialogAction(
                                           child: Text('Confirm'),
                                           isDestructiveAction: true,
                                           onPressed: () {
-                                            deleteAllScheduledReminder();
+                                            deleteAllScheduledReminder(context);
                                             Navigator.pop(context);
-                                          }),
-                                      CupertinoDialogAction(
-                                          child: Text('Cancel'),
-                                          onPressed: () => Navigator.pop(context))
+                                          })
                                     ],
                                   ));
                         },
@@ -93,6 +94,10 @@ class _SettingsState extends State<Settings> {
                                         'Deleting all active reminders is a non-reversible action.'),
                                     actions: [
                                       CupertinoDialogAction(
+                                          isDefaultAction: true,
+                                          child: Text('Cancel'),
+                                          onPressed: () => Navigator.pop(context)),
+                                      CupertinoDialogAction(
                                         child: Text('Confirm'),
                                         onPressed: () async {
                                           deleteAllEntries(reminderRef);
@@ -100,9 +105,6 @@ class _SettingsState extends State<Settings> {
                                         },
                                         isDestructiveAction: true,
                                       ),
-                                      CupertinoDialogAction(
-                                          child: Text('Cancel'),
-                                          onPressed: () => Navigator.pop(context))
                                     ],
                                   ));
                         },

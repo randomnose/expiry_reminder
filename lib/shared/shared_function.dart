@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart'
-    as localNoti;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' as localNoti;
 import 'package:expiry_reminder/main.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -11,8 +12,7 @@ import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 // this function is meant to find difference in expiry date, not reminder time
 int showDateDifference(DateTime date) {
   return DateTime(date.year, date.month, date.day)
-      .difference(DateTime(
-          DateTime.now().year, DateTime.now().month, DateTime.now().day))
+      .difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))
       .inDays;
 }
 
@@ -22,35 +22,35 @@ deleteReminder(DocumentSnapshot docToDelete, bool ifCompletelyDelete) async {
   if (ifCompletelyDelete == true) {
     deleteSpecificScheduledReminder(docToDelete.data['notificationID']);
 
-    // if the productImage is not '', then we delete the image.
-    if (docToDelete.data['productImage'] != '') {
-      StorageReference imgStorageRef = await FirebaseStorage.instance
-          .getReferenceFromUrl(docToDelete.data['productImage']);
+    // if the productImage is not null, then we delete the image.
+    if (docToDelete.data['productImage'] != null) {
+      StorageReference imgStorageRef =
+          await FirebaseStorage.instance.getReferenceFromUrl(docToDelete.data['productImage']);
 
       print(imgStorageRef.path);
 
-      await imgStorageRef.delete().catchError((onError) =>
-          print('An error has occured when deleting image.\n $onError'));
+      await imgStorageRef
+          .delete()
+          .catchError((onError) => print('An error has occured when deleting image.\n $onError'));
 
       print(
           'Image corresponding to >>>>>${docToDelete.data['reminderName']}<<<<< has been successfuly deleted.');
     }
   }
   // delete the document reference along with the image.
-  await docToDelete.reference.delete().catchError((onError) =>
-      print('An error has occured when deleting reminder.\n $onError'));
+  await docToDelete.reference
+      .delete()
+      .catchError((onError) => print('An error has occured when deleting reminder.\n $onError'));
 }
 
 // ----------------------------------------------------------------------------
 // Send Notification
-void scheduleReminder(
-    DateTime reminderTime, String productName, int notiID) async {
+void scheduleReminder(DateTime reminderTime, String productName, int notiID) async {
   tz.initializeTimeZones();
   final String currentTimezone = await FlutterNativeTimezone.getLocalTimezone();
   tz.setLocalLocation(tz.getLocation(currentTimezone));
 
-  var scheduledNotificationDateTime =
-      tz.TZDateTime.from(reminderTime, tz.local);
+  var scheduledNotificationDateTime = tz.TZDateTime.from(reminderTime, tz.local);
 
   var androidPlatformChannelSpecifics = localNoti.AndroidNotificationDetails(
     'alarm_notif',
@@ -95,15 +95,27 @@ void deleteSpecificScheduledReminder(int id) async {
       .whenComplete(() => print('>>>>> This reminder has been deleted. <<<<<'));
 }
 
-void deleteAllScheduledReminder() async {
+void deleteAllScheduledReminder(BuildContext context) async {
   await flutterLocalNotificationPlugin
       .cancelAll()
-      .whenComplete(() => print('All reminders have been deleted.'));
+      .whenComplete(() => print('All reminders have been deleted.'))
+      .whenComplete(() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+              title: Text('All scheduled reminders have been deleted.'),
+              actions: [
+                CupertinoDialogAction(
+                  child: Text('OK'),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ));
+  });
 }
 
 int getUniqueRandomNumber() {
-  dynamic randomNumberList = List<int>.generate(1000, (index) => index + 1)
-    ..shuffle();
+  dynamic randomNumberList = List<int>.generate(1000, (index) => index + 1)..shuffle();
 
   return randomNumberList.removeLast();
 }

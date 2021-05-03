@@ -227,7 +227,7 @@ class _HomeState extends State<Home> {
                                   height: 200,
                                   decoration: BoxDecoration(
                                       image:
-                                          snapshot.data.documents[index].data['productImage'] == ''
+                                          snapshot.data.documents[index].data['productImage'] == null
                                               ? DecorationImage(
                                                   image: AssetImage('assets/image_placeholder.png'),
                                                   fit: BoxFit.cover)

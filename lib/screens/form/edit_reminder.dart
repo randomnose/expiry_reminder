@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/shared/constants.dart';
+import 'package:expiry_reminder/shared/image_widget.dart';
 import 'package:expiry_reminder/shared/loading.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,8 +8,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class EditReminder extends StatefulWidget {
   final dynamic docToEdit;
@@ -29,11 +28,13 @@ class _EditReminderState extends State<EditReminder> {
   DateTime reminderTime;
   DateTime expiryDate;
   String imageUrl;
+  String imageToBeDeleted;
   int notiID;
   int newNotiID;
 
   bool hasTakenNewImage = false;
   bool loading = false;
+  bool queueDeleteImage = false;
 
   final dateFormat = new DateFormat.yMMMMEEEEd();
   final remindDateFormat = new DateFormat.jms();
@@ -77,8 +78,24 @@ class _EditReminderState extends State<EditReminder> {
                   color: appGreen,
                   child: IconButton(
                       icon: Icon(CupertinoIcons.trash),
-                      onPressed: () => deleteReminder(widget.docToEdit, true)
-                          .whenComplete(() => Navigator.pop(context))),
+                      onPressed: () => showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              content: Text('Are you sure you want to delete this reminder?'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context), child: Text('No')),
+                                TextButton(
+                                    onPressed: () {
+                                      deleteReminder(widget.docToEdit, true)
+                                          .whenComplete(() => Navigator.pop(context));
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('Yes'))
+                              ],
+                            );
+                          })),
                 )),
             body: GestureDetector(
               onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
@@ -91,28 +108,82 @@ class _EditReminderState extends State<EditReminder> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: appListTileGrey),
-                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: hasTakenNewImage
-                                    ? FileImage(_image)
-                                    : imageUrl == ''
-                                        ? AssetImage('assets/image_placeholder.jpg')
-                                        : NetworkImage(imageUrl),
-                              )),
-                          width: Get.width,
-                          padding: EdgeInsets.only(bottom: 5),
-                          height: 200,
+                        InkWell(
+                          onTap: imageUrl != null
+                              ? () => showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return hasTakenNewImage
+                                        ? AlertDialog(
+                                            clipBehavior: Clip.antiAlias,
+                                            contentPadding: EdgeInsets.all(0),
+                                            content: Image.file(_image),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(20)),
+                                            actions: [
+                                              FlatButton(
+                                                  splashColor: appGreen,
+                                                  onPressed: () {},
+                                                  child: Text('Remove',
+                                                      style: TextStyle(color: appButtonBrown)),
+                                                  minWidth: Get.width)
+                                            ],
+                                          )
+                                        : AlertDialog(
+                                            clipBehavior: Clip.antiAlias,
+                                            contentPadding: EdgeInsets.all(0),
+                                            content: Image.network(imageUrl),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(20)),
+                                            actions: [
+                                              FlatButton(
+                                                  splashColor: appGreen,
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      imageToBeDeleted = imageUrl;
+                                                      imageUrl = null;
+                                                      queueDeleteImage = true;
+                                                    });
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text('Remove',
+                                                      style: TextStyle(color: appButtonBrown)),
+                                                  minWidth: Get.width)
+                                            ],
+                                          );
+                                  })
+                              : () {},
+                          child: Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(color: appListTileGrey),
+                                borderRadius: BorderRadius.all(Radius.circular(8)),
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: hasTakenNewImage
+                                      ? FileImage(_image)
+                                      : imageUrl == null
+                                          ? AssetImage('assets/image_placeholder.jpg')
+                                          : NetworkImage(imageUrl),
+                                )),
+                            width: Get.width,
+                            padding: EdgeInsets.only(bottom: 5),
+                            height: 200,
+                          ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 15.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
-                                onPressed: getImage,
+                                onPressed: () async {
+                                  var image = await ImageWidget.getImage();
+                                  if (image != null) {
+                                    setState(() {
+                                      _image = File(image.path);
+                                      hasTakenNewImage = true;
+                                    });
+                                  }
+                                },
                                 icon: Icon(CupertinoIcons.photo_camera, color: appButtonBrown),
                                 label: Text('Take a photo of the product',
                                     style: TextStyle(color: appButtonBrown))),
@@ -134,7 +205,7 @@ class _EditReminderState extends State<EditReminder> {
                             },
                             decoration: textInputDecoration.copyWith(
                                 hintText: 'Enter product name here.',
-                                labelText: 'Product name',
+                                labelText: 'Product name (Required)',
                                 suffixIcon: IconButton(
                                   icon: Icon(CupertinoIcons.clear),
                                   onPressed: () => _nameController.clear(),
@@ -176,7 +247,7 @@ class _EditReminderState extends State<EditReminder> {
                           padding: EdgeInsets.only(left: 10.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Reminding you on:',
+                            child: Text('Reminding you on: (Required)',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
@@ -201,7 +272,7 @@ class _EditReminderState extends State<EditReminder> {
                           padding: EdgeInsets.only(left: 10.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Expiry Date:',
+                            child: Text('Expiry Date: (Required)',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
@@ -252,8 +323,12 @@ class _EditReminderState extends State<EditReminder> {
                           scheduleReminder(reminderTime, _nameController.text, newNotiID);
                         });
                       }
-                      final String newImageUrl =
-                          hasTakenNewImage ? await uploadImageToFirebase() : imageUrl;
+                      if (queueDeleteImage == true) {
+                        ImageWidget.deleteImageFromStorage(imageToBeDeleted);
+                      }
+                      final String newImageUrl = hasTakenNewImage
+                          ? await ImageWidget.uploadImageToFirebase(_image, true, imageUrl)
+                          : imageUrl;
                       print("new newNotiID is->>>> $newNotiID");
                       widget.docToEdit.reference.updateData({
                         'notificationID': newNotiID,
@@ -298,7 +373,7 @@ class _EditReminderState extends State<EditReminder> {
                     child: CupertinoDatePicker(
                       minimumDate: DateTime.now().add(Duration(minutes: 1)),
                       mode: CupertinoDatePickerMode.dateAndTime,
-                      initialDateTime: reminderTime,
+                      initialDateTime: DateTime.now().add(Duration(minutes: 1)),
                       onDateTimeChanged: (changedDate) {
                         setState(() => reminderTime = changedDate);
                       },
@@ -342,22 +417,5 @@ class _EditReminderState extends State<EditReminder> {
                 ],
               ),
             ));
-  }
-
-  Future getImage() async {
-    final image = await imagePicker.getImage(source: ImageSource.camera);
-    setState(() {
-      _image = File(image.path);
-      hasTakenNewImage = true;
-    });
-  }
-
-  Future<String> uploadImageToFirebase() async {
-    String fileName = basename(_image.path);
-    StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/$fileName');
-    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
-    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-    final String newImageUrl = await taskSnapshot.ref.getDownloadURL();
-    return newImageUrl;
   }
 }
