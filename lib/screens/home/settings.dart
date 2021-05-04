@@ -48,7 +48,7 @@ class _SettingsState extends State<Settings> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Delete all scheduled notifications'),
+                      Flexible(child: Text('Delete all scheduled notifications')),
                       RaisedButton(
                         onPressed: () {
                           showDialog(
@@ -66,7 +66,7 @@ class _SettingsState extends State<Settings> {
                                           child: Text('Confirm'),
                                           isDestructiveAction: true,
                                           onPressed: () {
-                                            deleteAllScheduledReminder(context);
+                                            Utils.deleteAllScheduledReminder(context);
                                             Navigator.pop(context);
                                           })
                                     ],
@@ -83,7 +83,7 @@ class _SettingsState extends State<Settings> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Delete all active reminders'),
+                    Flexible(child: Text('Delete all items (Fresh & Expired)')),
                     RaisedButton(
                         onPressed: () {
                           showDialog(
@@ -134,21 +134,9 @@ class _SettingsState extends State<Settings> {
     await collection.getDocuments().then((snapshot) {
       if (snapshot.documents.length != 0) {
         for (DocumentSnapshot doc in snapshot.documents) {
-          deleteReminder(doc, true).whenComplete(() {
-            print('All active reminders have been deleted.');
-            showDialog(
-                context: context,
-                builder: (BuildContext context) => CupertinoAlertDialog(
-                      title: Text('All active reminders have been deleted.'),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: Text('OK'),
-                          onPressed: () => Navigator.pop(context),
-                        )
-                      ],
-                    ));
-          }).catchError((onError) => print(onError));
+          Utils.deleteReminder(doc, true).catchError((onError) => print(onError));
         }
+        Utils.showToast('Active reminders deleted.');
       } else {
         showDialog(
             context: context,

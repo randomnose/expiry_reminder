@@ -47,6 +47,7 @@ dev_dependencies:
   path_provider: ^1.6.28
   flutter_local_notifications: ^4.0.1+2
   flutter_native_timezone: ^1.0.4
+  fluttertoast: ^7.1.8
   
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

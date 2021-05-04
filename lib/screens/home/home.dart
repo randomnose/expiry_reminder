@@ -42,7 +42,6 @@ class _HomeState extends State<Home> {
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
           Divider(height: 20, thickness: 10),
           _showCompletedItems(context, completedReminders.snapshots()),
-          // SizedBox(height: 40)
         ],
       ),
     );
@@ -72,11 +71,11 @@ class _HomeState extends State<Home> {
                 shrinkWrap: true,
                 itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
-                  if (snapshot.data.documents.length != 0) {
+                  if (snapshot.hasData) {
                     if (category == 'Fresh') {
                       try {
                         print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
-                        if (showDateDifference(
+                        if (Utils.showDateDifference(
                                     snapshot.data.documents[index].data['expiryDate'].toDate()) <=
                                 0 ||
                             snapshot.data.documents[index].data['expiryDate'].toDate ==
@@ -95,17 +94,14 @@ class _HomeState extends State<Home> {
                       documentRef: snapshot.data.documents[index],
                       popUpPrimaryMessage: 'Mark as complete',
                     );
+                  } else if (category == 'Expired' &&
+                      snapshot.data.documents[index].data['isExpired'] == 'Yes') {
+                    return ReminderTile(
+                      documentRef: snapshot.data.documents[index],
+                      popUpPrimaryMessage: 'Mark as complete',
+                    );
                   } else {
-                    if (category != 'All' &&
-                        category != 'Fresh' &&
-                        snapshot.data.documents[index].data['isExpired'] == 'Yes') {
-                      return ReminderTile(
-                        documentRef: snapshot.data.documents[index],
-                        popUpPrimaryMessage: 'Mark as complete',
-                      );
-                    } else {
-                      return Container();
-                    }
+                    return Container();
                   }
                 },
               );
@@ -168,17 +164,17 @@ class _HomeState extends State<Home> {
                                         CupertinoActionSheetAction(
                                             isDefaultAction: true,
                                             onPressed: () {
-                                              if (showDateDifference(snapshot
+                                              if (Utils.showDateDifference(snapshot
                                                       .data.documents[index].data['reminderDate']
                                                       .toDate()) >
                                                   0) {
-                                                scheduleReminder(
+                                                Utils.scheduleReminder(
                                                     snapshot
                                                         .data.documents[index].data['reminderDate']
                                                         .toDate(),
                                                     snapshot
                                                         .data.documents[index].data['reminderName'],
-                                                    getUniqueRandomNumber());
+                                                    Utils.getUniqueRandomNumber());
                                               }
                                               reminderRef
                                                   .add({
@@ -199,16 +195,20 @@ class _HomeState extends State<Home> {
                                                     'expiryDate': snapshot
                                                         .data.documents[index].data['expiryDate'],
                                                   })
-                                                  .whenComplete(() => deleteReminder(
+                                                  .whenComplete(() => Utils.deleteReminder(
                                                       snapshot.data.documents[index], false))
-                                                  .whenComplete(() => Navigator.pop(context));
+                                                  .whenComplete(() => Navigator.pop(context))
+                                                  .whenComplete(
+                                                      () => Utils.showToast('Reminder restored.'));
                                             },
                                             child: Text('Restore')),
                                         CupertinoActionSheetAction(
                                             isDestructiveAction: true,
-                                            onPressed: () =>
-                                                deleteReminder(snapshot.data.documents[index], true)
-                                                    .whenComplete(() => Navigator.pop(context)),
+                                            onPressed: () => Utils.deleteReminder(
+                                                    snapshot.data.documents[index], true)
+                                                .whenComplete(() => Navigator.pop(context))
+                                                .whenComplete(
+                                                    () => Utils.showToast('Reminder deleted.')),
                                             child: Text('Delete')),
                                       ],
                                       cancelButton: CupertinoActionSheetAction(
@@ -226,15 +226,15 @@ class _HomeState extends State<Home> {
                                 Container(
                                   height: 200,
                                   decoration: BoxDecoration(
-                                      image:
-                                          snapshot.data.documents[index].data['productImage'] == null
-                                              ? DecorationImage(
-                                                  image: AssetImage('assets/image_placeholder.png'),
-                                                  fit: BoxFit.cover)
-                                              : DecorationImage(
-                                                  image: NetworkImage(snapshot
-                                                      .data.documents[index].data['productImage']),
-                                                  fit: BoxFit.cover),
+                                      image: snapshot.data.documents[index].data['productImage'] ==
+                                              null
+                                          ? DecorationImage(
+                                              image: AssetImage('assets/image_placeholder.png'),
+                                              fit: BoxFit.cover)
+                                          : DecorationImage(
+                                              image: NetworkImage(snapshot
+                                                  .data.documents[index].data['productImage']),
+                                              fit: BoxFit.cover),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(color: Colors.grey)),
                                 ),
@@ -250,7 +250,7 @@ class _HomeState extends State<Home> {
                                 Padding(
                                   padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
                                   child: Text(
-                                    showDateDifference(snapshot
+                                    Utils.showDateDifference(snapshot
                                                 .data.documents[index].data['expiryDate']
                                                 .toDate()) <=
                                             0
@@ -262,7 +262,7 @@ class _HomeState extends State<Home> {
                                             dateFormat.format(snapshot
                                                 .data.documents[index].data['expiryDate']
                                                 .toDate()),
-                                    style: showDateDifference(snapshot
+                                    style: Utils.showDateDifference(snapshot
                                                 .data.documents[index].data['expiryDate']
                                                 .toDate()) <=
                                             0

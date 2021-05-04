@@ -95,16 +95,18 @@ class _AddNewReminder extends State<AddNewReminder> {
                                   builder: (BuildContext context) {
                                     return AlertDialog(
                                       clipBehavior: Clip.antiAlias,
-                                      contentPadding: EdgeInsets.all(0),
+                                      contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                                       content: Image.file(_image),
                                       shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(20)),
                                       actions: [
                                         FlatButton(
+                                            height: 60,
                                             splashColor: appGreen,
                                             onPressed: () {
                                               setState(() {
                                                 _image = null;
+                                                hasTakenImage = false;
                                               });
                                               Navigator.pop(context);
                                             },
@@ -280,7 +282,7 @@ class _AddNewReminder extends State<AddNewReminder> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Expiry Status : ${(showDateDifference(expiryDate) <= 0 && hasPickedExpiry == true) ? 'Expired' : 'Fresh'}',
+                              'Expiry Status : ${(Utils.showDateDifference(expiryDate) <= 0 && hasPickedExpiry == true) ? 'Expired' : 'Fresh'}',
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -303,24 +305,27 @@ class _AddNewReminder extends State<AddNewReminder> {
                         hasPickedDate == true &&
                         hasPickedExpiry == true) {
                       setState(() => loading = true);
-                      final int notiID = getUniqueRandomNumber();
-                      scheduleReminder(reminderTime, _nameController.text, notiID);
+                      final int notiID = Utils.getUniqueRandomNumber();
+                      Utils.scheduleReminder(reminderTime, _nameController.text, notiID);
                       final String imageUrl = _image != null
                           ? await ImageWidget.uploadImageToFirebase(_image, false)
                           : null;
-                      reminderCollection.add({
-                        'notificationID': notiID,
-                        'productImage': imageUrl,
-                        'productBarcode': _barcodeController.text,
-                        'reminderName': _nameController.text,
-                        'reminderDate': reminderTime.toLocal(),
-                        'reminderDesc': _descriptionController.text,
-                        'isExpired':
-                            (showDateDifference(expiryDate) <= 0 && hasPickedExpiry == true)
-                                ? 'Yes'
-                                : 'No',
-                        'expiryDate': expiryDate.toLocal(),
-                      }).whenComplete(() => Navigator.pop(context));
+                      reminderCollection
+                          .add({
+                            'notificationID': notiID,
+                            'productImage': imageUrl,
+                            'productBarcode': _barcodeController.text,
+                            'reminderName': _nameController.text,
+                            'reminderDate': reminderTime.toLocal(),
+                            'reminderDesc': _descriptionController.text,
+                            'isExpired':
+                                (Utils.showDateDifference(expiryDate) <= 0 && hasPickedExpiry == true)
+                                    ? 'Yes'
+                                    : 'No',
+                            'expiryDate': expiryDate.toLocal(),
+                          })
+                          .whenComplete(() => Navigator.pop(context))
+                          .whenComplete(() => Utils.showToast('Reminder created.'));
                     } else {
                       setState(() => loading = false);
                       showDialog(

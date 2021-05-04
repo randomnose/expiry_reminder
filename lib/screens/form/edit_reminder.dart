@@ -81,6 +81,7 @@ class _EditReminderState extends State<EditReminder> {
                       onPressed: () => showDialog(
                           context: context,
                           builder: (BuildContext context) {
+                            // TODO: beautify alert dialog
                             return AlertDialog(
                               content: Text('Are you sure you want to delete this reminder?'),
                               actions: [
@@ -88,8 +89,9 @@ class _EditReminderState extends State<EditReminder> {
                                     onPressed: () => Navigator.pop(context), child: Text('No')),
                                 TextButton(
                                     onPressed: () {
-                                      deleteReminder(widget.docToEdit, true)
-                                          .whenComplete(() => Navigator.pop(context));
+                                      Utils.deleteReminder(widget.docToEdit, true)
+                                          .whenComplete(() => Navigator.pop(context))
+                                          .whenComplete(() => Utils.showToast('Reminder deleted.'));
                                       Navigator.pop(context);
                                     },
                                     child: Text('Yes'))
@@ -109,21 +111,27 @@ class _EditReminderState extends State<EditReminder> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         InkWell(
-                          onTap: imageUrl != null
+                          onTap: imageUrl != null || _image != null
                               ? () => showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
                                     return hasTakenNewImage
                                         ? AlertDialog(
                                             clipBehavior: Clip.antiAlias,
-                                            contentPadding: EdgeInsets.all(0),
+                                            contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                                             content: Image.file(_image),
                                             shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(20)),
                                             actions: [
                                               FlatButton(
+                                                  height: 60,
                                                   splashColor: appGreen,
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      hasTakenNewImage = false;
+                                                      Navigator.pop(context);
+                                                    });
+                                                  },
                                                   child: Text('Remove',
                                                       style: TextStyle(color: appButtonBrown)),
                                                   minWidth: Get.width)
@@ -131,12 +139,13 @@ class _EditReminderState extends State<EditReminder> {
                                           )
                                         : AlertDialog(
                                             clipBehavior: Clip.antiAlias,
-                                            contentPadding: EdgeInsets.all(0),
+                                            contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                                             content: Image.network(imageUrl),
                                             shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(20)),
                                             actions: [
                                               FlatButton(
+                                                  height: 60,
                                                   splashColor: appGreen,
                                                   onPressed: () {
                                                     setState(() {
@@ -295,7 +304,7 @@ class _EditReminderState extends State<EditReminder> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Expiry Status : ${(showDateDifference(expiryDate) <= 0) ? 'Expired' : 'Fresh'}',
+                              'Expiry Status : ${(Utils.showDateDifference(expiryDate) <= 0) ? 'Expired' : 'Fresh'}',
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -317,10 +326,10 @@ class _EditReminderState extends State<EditReminder> {
                       setState(() => loading = true);
                       if (widget.docToEdit.data['reminderDate'].toDate() != reminderTime) {
                         setState(() {
-                          newNotiID = getUniqueRandomNumber();
+                          newNotiID = Utils.getUniqueRandomNumber();
                           print('newNotiID after randomising is->>>>>> $newNotiID');
-                          deleteSpecificScheduledReminder(notiID);
-                          scheduleReminder(reminderTime, _nameController.text, newNotiID);
+                          Utils.deleteSpecificScheduledReminder(notiID);
+                          Utils.scheduleReminder(reminderTime, _nameController.text, newNotiID);
                         });
                       }
                       if (queueDeleteImage == true) {
@@ -330,16 +339,19 @@ class _EditReminderState extends State<EditReminder> {
                           ? await ImageWidget.uploadImageToFirebase(_image, true, imageUrl)
                           : imageUrl;
                       print("new newNotiID is->>>> $newNotiID");
-                      widget.docToEdit.reference.updateData({
-                        'notificationID': newNotiID,
-                        'productImage': newImageUrl,
-                        'productBarcode': _barcodeController.text,
-                        'reminderName': _nameController.text,
-                        'reminderDate': reminderTime.toLocal(),
-                        'reminderDesc': _descriptionController.text,
-                        'isExpired': (showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No',
-                        'expiryDate': expiryDate.toLocal()
-                      }).whenComplete(() => Navigator.pop(context));
+                      widget.docToEdit.reference
+                          .updateData({
+                            'notificationID': newNotiID,
+                            'productImage': newImageUrl,
+                            'productBarcode': _barcodeController.text,
+                            'reminderName': _nameController.text,
+                            'reminderDate': reminderTime.toLocal(),
+                            'reminderDesc': _descriptionController.text,
+                            'isExpired': (Utils.showDateDifference(expiryDate) <= 0) ? 'Yes' : 'No',
+                            'expiryDate': expiryDate.toLocal()
+                          })
+                          .whenComplete(() => Navigator.pop(context))
+                          .whenComplete(() => Utils.showToast('Edit saved successfully.'));
                     } else {
                       setState(() => loading = false);
                       showDialog(

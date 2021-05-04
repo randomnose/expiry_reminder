@@ -12,8 +12,7 @@ import 'package:get/get.dart';
 class ReminderTile extends StatefulWidget {
   final DocumentSnapshot documentRef;
   final String popUpPrimaryMessage;
-  const ReminderTile({Key key, this.documentRef, this.popUpPrimaryMessage})
-      : super(key: key);
+  const ReminderTile({Key key, this.documentRef, this.popUpPrimaryMessage}) : super(key: key);
 
   @override
   _ReminderTileState createState() => _ReminderTileState();
@@ -21,6 +20,7 @@ class ReminderTile extends StatefulWidget {
 
 class _ReminderTileState extends State<ReminderTile> {
   final dateFormat = new DateFormat.yMd();
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User>(context);
@@ -43,7 +43,7 @@ class _ReminderTileState extends State<ReminderTile> {
                           CupertinoActionSheetAction(
                               isDefaultAction: true,
                               onPressed: () {
-                                deleteSpecificScheduledReminder(
+                                Utils.deleteSpecificScheduledReminder(
                                     widget.documentRef.data['notificationID']);
                                 completedReminders
                                     .add({
@@ -56,14 +56,17 @@ class _ReminderTileState extends State<ReminderTile> {
                                       'isExpired': widget.documentRef.data['isExpired'],
                                       'expiryDate': widget.documentRef.data['expiryDate'],
                                     })
-                                    .whenComplete(() => deleteReminder(widget.documentRef, false))
-                                    .whenComplete(() => Navigator.pop(context));
+                                    .whenComplete(
+                                        () => Utils.deleteReminder(widget.documentRef, false))
+                                    .whenComplete(() => Navigator.pop(context))
+                                    .whenComplete(() => Utils.showToast('Marked as complete.'));
                               },
                               child: Text(widget.popUpPrimaryMessage)),
                           CupertinoActionSheetAction(
                               isDestructiveAction: true,
-                              onPressed: () => deleteReminder(widget.documentRef, true)
-                                  .whenComplete(() => Navigator.pop(context)),
+                              onPressed: () => Utils.deleteReminder(widget.documentRef, true)
+                                  .whenComplete(() => Navigator.pop(context))
+                                  .whenComplete(() => Utils.showToast('Reminder deleted.')),
                               child: Text('Delete')),
                         ],
                         cancelButton: CupertinoActionSheetAction(
@@ -76,21 +79,16 @@ class _ReminderTileState extends State<ReminderTile> {
               backgroundColor: Colors.grey[400],
               radius: 25,
               backgroundImage: widget.documentRef.data['productImage'] == null
-                  ? AssetImage(
-                      'assets/image_placeholder.jpg',
-                    )
-                  : NetworkImage(
-                      widget.documentRef.data['productImage'],
-                    ),
+                  ? AssetImage('assets/image_placeholder.jpg')
+                  : NetworkImage(widget.documentRef.data['productImage']),
             ),
             title: Text(widget.documentRef.data['reminderName'],
                 maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: showDateDifference(widget.documentRef.data['expiryDate'].toDate()) <= 0
+            subtitle: Utils.showDateDifference(widget.documentRef.data['expiryDate'].toDate()) <= 0
                 ? Text(
                     'Expired on: ' +
                         dateFormat.format(widget.documentRef.data['expiryDate'].toDate()),
-                    style: errorTextStyle.copyWith(fontSize: 14),
-                  )
+                    style: errorTextStyle.copyWith(fontSize: 14))
                 : Text('Expiring on: ' +
                     dateFormat.format(widget.documentRef.data['expiryDate'].toDate()))),
       ),
