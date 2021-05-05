@@ -119,4 +119,8 @@ class Utils {
 
     return randomNumberList.removeLast();
   }
+
+  static String barcodeUrl(String barcodeNumber) {
+    return "https://api.upcdatabase.org/product/$barcodeNumber?apikey=4653186551EF1AA505DE0EC0CEB509C0";
+  }
 }

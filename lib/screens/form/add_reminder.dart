@@ -1,4 +1,6 @@
+import 'package:expiry_reminder/models/product_info.dart';
 import 'package:expiry_reminder/models/user.dart';
+import 'package:expiry_reminder/services/api_manager.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/image_widget.dart';
 import 'package:expiry_reminder/shared/loading.dart';
@@ -9,9 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
@@ -318,10 +318,10 @@ class _AddNewReminder extends State<AddNewReminder> {
                             'reminderName': _nameController.text,
                             'reminderDate': reminderTime.toLocal(),
                             'reminderDesc': _descriptionController.text,
-                            'isExpired':
-                                (Utils.showDateDifference(expiryDate) <= 0 && hasPickedExpiry == true)
-                                    ? 'Yes'
-                                    : 'No',
+                            'isExpired': (Utils.showDateDifference(expiryDate) <= 0 &&
+                                    hasPickedExpiry == true)
+                                ? 'Yes'
+                                : 'No',
                             'expiryDate': expiryDate.toLocal(),
                           })
                           .whenComplete(() => Navigator.pop(context))
@@ -353,56 +353,38 @@ class _AddNewReminder extends State<AddNewReminder> {
       if (barcodeValue == '-1') {
         print('User cancelled using the barcode reader');
       } else {
-        setState(() => _barcodeController.text = barcodeValue);
-        print("==============================================================");
-        print("Latest barcode controller text is ->" + _barcodeController.text);
-        _getProductInfoFromAPI();
+        final ProductInfo productInfo = await APIManager().getProductInfoFromAPI(barcodeValue);
+        print('the product info issss ->>>> $productInfo');
+        if (productInfo != null) {
+          if (productInfo.success == true) {
+            setState(() {
+              _nameController.text = productInfo.title;
+              _barcodeController.text = productInfo.barcode;
+              _descriptionController.text = productInfo.description;
+            });
+          } else {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) => CupertinoAlertDialog(
+                      title: Text('Alert'),
+                      content: Text('No product could be found with that barcode.'),
+                      actions: [
+                        CupertinoDialogAction(
+                          isDefaultAction: true,
+                          child: Text('Confirm'),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      ],
+                    ));
+          }
+        }
       }
       return barcodeValue;
     } on Exception catch (e) {
       print(e.toString());
     }
-  }
-
-  Future _getProductInfoFromAPI() async {
-    try {
-      print('The barcode getting from _getProductInfoAPI is -> ' + _barcodeController.text);
-
-      var result = await http.get(
-          "https://api.upcdatabase.org/product/${_barcodeController.text}?apikey=4653186551EF1AA505DE0EC0CEB509C0");
-      Map<String, dynamic> productData = new Map<String, dynamic>.from(json.decode(result.body));
-
-      print(productData);
-      productData['success'] == true
-          ? _updateProductInfo(productData)
-          : showDialog(
-              context: context,
-              builder: (BuildContext context) => CupertinoAlertDialog(
-                    title: Text('Alert'),
-                    content: Text('No product could be found with that barcode.'),
-                    actions: [
-                      CupertinoDialogAction(
-                        isDefaultAction: true,
-                        child: Text('Confirm'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      )
-                    ],
-                  ));
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  Future _updateProductInfo(dynamic productJson) async {
-    setState(() {
-      _nameController.text = productJson['title'];
-      _descriptionController.text = productJson['description'] ?? _descriptionController.text;
-    });
-
-    print("Latest product name is ->>>" + _nameController.text);
-    print("==============================================================");
   }
 
   void _pickReminderTime(BuildContext context) {
