@@ -71,25 +71,31 @@ class _HomeState extends State<Home> {
                 shrinkWrap: true,
                 itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
                 itemBuilder: (context, index) {
-                  if (snapshot.hasData) {
-                    if (category == 'Fresh') {
-                      try {
-                        print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
-                        if (Utils.showDateDifference(
-                                    snapshot.data.documents[index].data['expiryDate'].toDate()) <=
-                                0 ||
-                            snapshot.data.documents[index].data['expiryDate'].toDate ==
-                                DateTime.now()) {
-                          snapshot.data.documents[index].reference.updateData({'isExpired': 'Yes'});
-                        }
-                      } catch (e) {
-                        print(e.toString());
-                        print(snapshot.data.documents[index].data['expiryDate'].toDate());
-                      }
-                    }
-                  }
+                  // if (snapshot.hasData) {
+                  //   if (category == 'Fresh') {
+                  //     try {
+                  //       print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
+                  //       if (Utils.showDateDifference(
+                  //                   snapshot.data.documents[index].data['expiryDate'].toDate()) <=
+                  //               0 ||
+                  //           snapshot.data.documents[index].data['expiryDate'].toDate() ==
+                  //               DateTime.now()) {
+                  //         snapshot.data.documents[index].reference.updateData({'isExpired': 'Yes'});
+                  //       }
+                  //     } catch (e) {
+                  //       print(e.toString());
+                  //       print(snapshot.data.documents[index].data['expiryDate'].toDate());
+                  //     }
+                  //   }
+                  // }
                   if (category == 'Fresh' &&
                       snapshot.data.documents[index].data['isExpired'] == 'No') {
+                    if (Utils.showDateDifference(
+                            snapshot.data.documents[index].data['expiryDate'].toDate()) <=
+                        0) {
+                      print('>>>>>> EXPIRED ITEMS FOUND IN BACKGROUND <<<<<');
+                      snapshot.data.documents[index].reference.updateData({'isExpired': 'Yes'});
+                    }
                     return ReminderTile(
                       documentRef: snapshot.data.documents[index],
                       popUpPrimaryMessage: 'Mark as complete',

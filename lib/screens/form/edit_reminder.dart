@@ -81,18 +81,20 @@ class _EditReminderState extends State<EditReminder> {
                       onPressed: () => showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            // TODO: beautify alert dialog
-                            return AlertDialog(
-                              content: Text('Are you sure you want to delete this reminder?'),
+                            return CupertinoAlertDialog(
+                              title: Text('Are you sure you want to delete this reminder?'),
                               actions: [
-                                TextButton(
-                                    onPressed: () => Navigator.pop(context), child: Text('No')),
-                                TextButton(
+                                CupertinoDialogAction(
+                                    isDefaultAction: true,
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text('No')),
+                                CupertinoDialogAction(
+                                    isDestructiveAction: true,
                                     onPressed: () {
                                       Utils.deleteReminder(widget.docToEdit, true)
                                           .whenComplete(() => Navigator.pop(context))
-                                          .whenComplete(() => Utils.showToast('Reminder deleted.'));
-                                      Navigator.pop(context);
+                                          .whenComplete(() => Utils.showToast('Reminder deleted.'))
+                                          .whenComplete(() => Navigator.pop(context));
                                     },
                                     child: Text('Yes'))
                               ],
