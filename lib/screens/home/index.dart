@@ -35,7 +35,7 @@ class IndexPageState extends State<IndexPage> {
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
               onPressed: () => Get.to(() => AddNewReminder()),
-              child: Center(child: Icon(CupertinoIcons.add)),
+              child: Center(child: Icon(Icons.menu)),
               backgroundColor: appButtonBrown,
               elevation: 5,
             )

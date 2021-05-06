@@ -1,5 +1,6 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/edit_reminder.dart';
+import 'package:expiry_reminder/screens/home/search.dart';
 import 'package:expiry_reminder/shared/reminder_tile.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
@@ -38,6 +39,14 @@ class _HomeState extends State<Home> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+                      child: TextButton.icon(
+              onPressed: () => Get.to(() => SearchPage()),
+              icon: Icon(Icons.search),
+              label: Text('Search'),
+            ),
+          ),
           _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
           _showAllItems(context, reminderRef.snapshots(), 'Expired'),
           Divider(height: 20, thickness: 10),
