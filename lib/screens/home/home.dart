@@ -1,6 +1,7 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/edit_reminder.dart';
 import 'package:expiry_reminder/screens/home/search.dart';
+import 'package:expiry_reminder/screens/reminders/all_reminders.dart';
 import 'package:expiry_reminder/shared/reminder_tile.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
@@ -36,23 +37,63 @@ class _HomeState extends State<Home> {
         .collection('completedReminders')
         .orderBy('expiryDate');
 
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-                      child: TextButton.icon(
-              onPressed: () => Get.to(() => SearchPage()),
-              icon: Icon(Icons.search),
-              label: Text('Search'),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+            width: Get.width,
+            margin: EdgeInsets.only(bottom: 20),
+            padding: EdgeInsets.fromLTRB(20, 50, 20, 25),
+            decoration: BoxDecoration(
+                color: appGreen,
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                RichText(
+                    text: TextSpan(
+                        text: 'Expiry\n',
+                        style:
+                            TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: appBgGrey),
+                        children: [
+                      TextSpan(
+                          text: 'Reminder',
+                          style:
+                              TextStyle(fontWeight: FontWeight.bold, color: appBlack, fontSize: 24))
+                    ])),
+                IconButton(
+                    icon: Icon(Icons.search_rounded, size: 35),
+                    onPressed: () => Get.to(() => SearchPage()))
+              ],
+            )),
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Expiring soon',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
+              ButtonTheme(
+                  shape:
+                      RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                  splashColor: appGreen.withOpacity(0.5),
+                  child: RaisedButton(
+                    color: appGreen,
+                    onPressed: () => Get.to(() => AllReminders()),
+                    child: Text(
+                      'View all',
+                      style: TextStyle(color: appBgGrey),
+                    ),
+                  ))
+            ],
           ),
-          _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
-          _showAllItems(context, reminderRef.snapshots(), 'Expired'),
-          Divider(height: 20, thickness: 10),
-          _showCompletedItems(context, completedReminders.snapshots()),
-        ],
-      ),
+        ),
+        _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
+        _showAllItems(context, reminderRef.snapshots(), 'Expired'),
+        Divider(height: 20, thickness: 5),
+      ],
     );
   }
 
@@ -99,21 +140,28 @@ class _HomeState extends State<Home> {
                   // }
                   if (category == 'Fresh' &&
                       snapshot.data.documents[index].data['isExpired'] == 'No') {
+                    // TODO: not sure where to put this.
                     if (Utils.showDateDifference(
                             snapshot.data.documents[index].data['expiryDate'].toDate()) <=
                         0) {
                       print('>>>>>> EXPIRED ITEMS FOUND IN BACKGROUND <<<<<');
                       snapshot.data.documents[index].reference.updateData({'isExpired': 'Yes'});
                     }
-                    return ReminderTile(
-                      documentRef: snapshot.data.documents[index],
-                      popUpPrimaryMessage: 'Mark as complete',
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15),
+                      child: ReminderTile(
+                        documentRef: snapshot.data.documents[index],
+                        popUpPrimaryMessage: 'Mark as complete',
+                      ),
                     );
                   } else if (category == 'Expired' &&
                       snapshot.data.documents[index].data['isExpired'] == 'Yes') {
-                    return ReminderTile(
-                      documentRef: snapshot.data.documents[index],
-                      popUpPrimaryMessage: 'Mark as complete',
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15),
+                      child: ReminderTile(
+                        documentRef: snapshot.data.documents[index],
+                        popUpPrimaryMessage: 'Mark as complete',
+                      ),
                     );
                   } else {
                     return Container();
@@ -139,7 +187,7 @@ class _HomeState extends State<Home> {
           padding: EdgeInsets.only(left: 10, bottom: 10.0),
           child: Row(
             children: [
-              CircleAvatar(backgroundColor: Colors.grey),
+              CircleAvatar(backgroundColor: appListTileGrey),
               Padding(
                 padding: EdgeInsets.only(left: 10.0),
                 child: Text('Completed Items',
@@ -295,7 +343,7 @@ class _HomeState extends State<Home> {
                       child: Padding(
                         padding: EdgeInsets.only(top: 20.0),
                         child: Text('There is no completed reminders.',
-                            style: errorTextStyle.copyWith(color: appBottomNavGreen)),
+                            style: errorTextStyle.copyWith(color: appBlack)),
                       ),
                     );
             },

@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -89,44 +88,110 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.grey[200],
-        appBar: CupertinoNavigationBar(
-            actionsForegroundColor: Colors.black,
-            backgroundColor: appGreen,
-            middle: Text('Search')),
         body: GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-          child: Container(
-            height: Get.height,
-            child: Column(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Stack(children: [
+            Column(
               children: [
                 Container(
-                  padding: EdgeInsets.all(20),
-                  child: TextField(
-                    onTap: () {},
-                    controller: _searchController,
-                    decoration: textInputDecoration.copyWith(
-                        prefixIcon: Icon(Icons.search), hintText: 'Search'),
-                  ),
-                ),
-                _resultsList.length == 0
-                    ? Center(
-                        heightFactor: 4,
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 10.0),
-                              child:
-                                  Icon(CupertinoIcons.wand_rays, size: 50, color: appListTileGrey),
-                            ),
-                            Text('Oops there is no results',
-                                style: errorTextStyle.copyWith(color: appListTileGrey)),
-                          ],
+                    padding: EdgeInsets.fromLTRB(20, 50, 20, 25),
+                    decoration: BoxDecoration(
+                        color: appGreen,
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 20.0),
+                          child: RichText(
+                              text: TextSpan(
+                                  text: 'Search\n',
+                                  style: TextStyle(
+                                      fontSize: 30, fontWeight: FontWeight.bold, color: appBgGrey),
+                                  children: [
+                                TextSpan(text: 'for ', style: TextStyle(fontSize: 24)),
+                                TextSpan(
+                                    text: 'reminders',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: appBlack,
+                                        fontSize: 24))
+                              ])),
                         ),
-                      )
+                        Container(
+                          alignment: Alignment.center,
+                          height: 60,
+                          decoration: BoxDecoration(
+                              color: appBgGrey,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: Offset(0, 10),
+                                    blurRadius: 50,
+                                    color: appButtonBrown.withOpacity(0.4))
+                              ]),
+                          child: TextField(
+                            textAlignVertical: TextAlignVertical.center,
+                            textAlign: TextAlign.start,
+                            controller: _searchController,
+                            cursorColor: appButtonBrown,
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: appBottomNavGreen,
+                                fontWeight: FontWeight.w400),
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.search, color: appGreen, size: 30),
+                              suffixIcon: _searchController.text != ''
+                                  ? IconButton(
+                                      icon: Icon(CupertinoIcons.xmark_circle),
+                                      onPressed: () => _searchController.clear())
+                                  : null,
+                              hintText: 'Search',
+                              hintStyle: TextStyle(color: appGreen),
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                          ),
+                        )
+                      ],
+                    )),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20, 15, 20, 10),
+                    child: Text(
+                      'Search results',
+                      style:
+                          TextStyle(fontSize: 24, color: appBlack, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Padding(
+                      padding: EdgeInsets.only(right: 20),
+                      child: Text('${_resultsList.length} results',
+                          style: whiteTextStyle.copyWith(
+                              color: appBottomNavGreen, fontWeight: FontWeight.bold)))
+                ]),
+                _resultsList.length == 0
+                    ? Padding(
+                      padding: EdgeInsets.only(top: 60.0),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 10.0),
+                            child: Icon(CupertinoIcons.ellipses_bubble,
+                                size: 50, color: appListTileGrey),
+                          ),
+                          Text('Oops there is no results',
+                              style: errorTextStyle.copyWith(color: appListTileGrey)),
+                        ],
+                      ),
+                    )
                     :
                     // list view for search result
                     Expanded(
                         child: ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.symmetric(horizontal: 20),
                           itemCount: _resultsList.length,
                           itemBuilder: (BuildContext context, int index) {
                             return ReminderTile(
@@ -137,7 +202,15 @@ class _SearchPageState extends State<SearchPage> {
                       )
               ],
             ),
-          ),
+            Positioned(
+              top: 43,
+              right: 10,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close),
+              ),
+            ),
+          ]),
         ));
   }
 }

@@ -26,15 +26,18 @@ class _LoadingState extends State<Loading> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: appSignInBgGreen,
+      backgroundColor: appBgGrey,
       body: Center(
         child: Container(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SpinKitFadingCube(color: appBottomNavGreen, size: 70),
+              SpinKitFadingCube(color: appGreen, size: 70),
               SizedBox(height: 40),
-              Text(loadingQuotes[_randomiser.nextInt(loadingQuotes.length)])
+              Text(
+                loadingQuotes[_randomiser.nextInt(loadingQuotes.length)],
+                style: TextStyle(color: appGreen, fontWeight: FontWeight.bold, fontSize: 16),
+              )
             ],
           ),
         ),

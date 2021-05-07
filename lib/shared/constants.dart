@@ -18,13 +18,14 @@ TextStyle greenTextStyle = TextStyle(fontSize: 16, color: appBottomNavGreen);
 TextStyle errorTextStyle = TextStyle(
     fontSize: 18, color: Colors.red[400], fontWeight: FontWeight.w500);
 TextStyle sectionTitle = TextStyle(
-    fontSize: 18, color: CupertinoColors.black, fontWeight: FontWeight.w500);
+    fontSize: 18, color: appBlack, fontWeight: FontWeight.w500);
 
-Color appGreen = Color(0xff93A280);
+Color appGreen = Color(0xff748F8A);
 Color appRed = Color(0xffD88C8C);
-Color appBgGrey = Color(0xffFAFAF8);
+Color appBgGrey = Color(0xffD4D9DB);
 Color appButtonBrown = Color(0xff725A48);
+Color appBlack = Color(0xff1F2827);
 Color appListTileGrey = Color(0xff787878);
-Color appBottomNavGreen = Color(0xff6E6E61);
+Color appBottomNavGreen = Color(0xff334D43);
 Color appLoadingBgGreen = Color(0xffa3a38c);
 Color appSignInBgGreen = Color(0xffa9b39b);

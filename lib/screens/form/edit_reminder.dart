@@ -71,8 +71,8 @@ class _EditReminderState extends State<EditReminder> {
                 actionsForegroundColor: Colors.black,
                 backgroundColor: appGreen,
                 middle: Text(
-                  'Edit a Reminder',
-                  style: TextStyle(fontSize: 20),
+                  'Edit reminder',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: appBlack, fontSize: 24),
                 ),
                 trailing: Material(
                   color: appGreen,

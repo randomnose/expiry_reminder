@@ -74,8 +74,8 @@ class _AddNewReminder extends State<AddNewReminder> {
               actionsForegroundColor: Colors.black,
               backgroundColor: appGreen,
               middle: Text(
-                'Add a Reminder',
-                style: TextStyle(fontSize: 20),
+                'Add reminder',
+                style: TextStyle(fontWeight: FontWeight.bold, color: appBlack, fontSize: 24),
               ),
             ),
             body: GestureDetector(

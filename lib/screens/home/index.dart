@@ -22,20 +22,11 @@ class IndexPageState extends State<IndexPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: CupertinoNavigationBar(
-        backgroundColor: appGreen,
-        middle: _currentIndex == 0
-            ? Text(
-                'Expiry Reminder',
-                style: TextStyle(fontSize: 20),
-              )
-            : Text('Settings', style: TextStyle(fontSize: 20)),
-      ),
       body: tabs[_currentIndex],
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
               onPressed: () => Get.to(() => AddNewReminder()),
-              child: Center(child: Icon(Icons.menu)),
+              child: Center(child: Icon(Icons.add)),
               backgroundColor: appButtonBrown,
               elevation: 5,
             )
@@ -43,23 +34,21 @@ class IndexPageState extends State<IndexPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         notchMargin: 6,
-        color: appBottomNavGreen,
+        color: appBgGrey,
         shape: CircularNotchedRectangle(),
         clipBehavior: Clip.antiAlias,
         child: BottomNavigationBar(
           elevation: 0,
           currentIndex: _currentIndex,
-          backgroundColor: appBottomNavGreen,
-          selectedItemColor: appBgGrey,
-          unselectedItemColor: CupertinoColors.black,
+          backgroundColor: appBgGrey,
+          selectedItemColor: appBlack,
+          unselectedItemColor: appListTileGrey,
           selectedFontSize: 17,
           unselectedFontSize: 14,
           selectedIconTheme: IconThemeData(size: 30),
           items: [
-            BottomNavigationBarItem(
-                icon: Icon(CupertinoIcons.square_list), label: 'Reminders'),
-            BottomNavigationBarItem(
-                icon: Icon(CupertinoIcons.settings_solid), label: 'Settings')
+            BottomNavigationBarItem(icon: Icon(CupertinoIcons.square_list), label: 'Reminders'),
+            BottomNavigationBarItem(icon: Icon(CupertinoIcons.settings_solid), label: 'Settings')
           ],
           onTap: (index) {
             setState(() {
