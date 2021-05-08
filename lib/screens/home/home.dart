@@ -21,6 +21,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final dateFormat = new DateFormat.yMd();
+  final PageController _pageController = PageController(initialPage: 0, viewportFraction: 0.9);
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class _HomeState extends State<Home> {
         .collection('appUsers')
         .document(user.uid)
         .collection('reminders')
+        .where('isExpired', isEqualTo: 'No')
         .orderBy('expiryDate');
 
     final completedReminders = Firestore.instance
@@ -37,141 +39,111 @@ class _HomeState extends State<Home> {
         .collection('completedReminders')
         .orderBy('expiryDate');
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-            width: Get.width,
-            margin: EdgeInsets.only(bottom: 20),
-            padding: EdgeInsets.fromLTRB(20, 50, 20, 25),
-            decoration: BoxDecoration(
-                color: appGreen,
-                borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25))),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+              width: Get.width,
+              margin: EdgeInsets.only(bottom: 20),
+              padding: EdgeInsets.fromLTRB(20, 50, 20, 25),
+              decoration: BoxDecoration(
+                  color: appGreen,
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25)),
+                  boxShadow: [
+                    BoxShadow(
+                        offset: Offset(0, 1), blurRadius: 30, color: appGreen.withOpacity(0.5))
+                  ]),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  RichText(
+                      text: TextSpan(
+                          text: 'Expiry\n',
+                          style: TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.bold, color: appBgGrey),
+                          children: [
+                        TextSpan(
+                            text: 'Reminder',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, color: appBlack, fontSize: 24))
+                      ])),
+                  IconButton(
+                      icon: Icon(Icons.search_rounded, size: 35),
+                      onPressed: () => Get.to(() => SearchPage()))
+                ],
+              )),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                RichText(
-                    text: TextSpan(
-                        text: 'Expiry\n',
-                        style:
-                            TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: appBgGrey),
-                        children: [
-                      TextSpan(
-                          text: 'Reminder',
-                          style:
-                              TextStyle(fontWeight: FontWeight.bold, color: appBlack, fontSize: 24))
-                    ])),
-                IconButton(
-                    icon: Icon(Icons.search_rounded, size: 35),
-                    onPressed: () => Get.to(() => SearchPage()))
+                Text('Expiring soon',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
+                ButtonTheme(
+                    shape:
+                        RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    splashColor: appGreen.withOpacity(0.5),
+                    child: RaisedButton(
+                      color: appGreen,
+                      onPressed: () => Get.to(() => AllReminders()),
+                      child: Text(
+                        'View all',
+                        style: TextStyle(color: appBgGrey),
+                      ),
+                    ))
               ],
-            )),
-        Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Expiring soon',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
-              ButtonTheme(
-                  shape:
-                      RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                  splashColor: appGreen.withOpacity(0.5),
-                  child: RaisedButton(
-                    color: appGreen,
-                    onPressed: () => Get.to(() => AllReminders()),
-                    child: Text(
-                      'View all',
-                      style: TextStyle(color: appBgGrey),
-                    ),
-                  ))
-            ],
+            ),
           ),
-        ),
-        _showAllItems(context, reminderRef.snapshots(), 'Fresh'),
-        _showAllItems(context, reminderRef.snapshots(), 'Expired'),
-        Divider(height: 20, thickness: 5),
-      ],
+          _showExpiringSoonItems(context, reminderRef.snapshots()),
+          _showCompletedItems(context, completedReminders.snapshots())
+        ],
+      ),
     );
   }
 
-  _showAllItems(BuildContext context, Stream<QuerySnapshot> streamSnapshot, String category) {
-    return Padding(
-      padding: EdgeInsets.all(8.0),
-      child: Card(
-        color: Colors.grey[200],
-        child: ExpandablePanel(
-          header: ListTile(
-            leading: category == 'Fresh'
-                ? CircleAvatar(backgroundColor: appGreen)
-                : CircleAvatar(backgroundColor: appRed),
-            title: category == 'Fresh'
-                ? Text('Fresh Items',
-                    style: TextStyle(color: appGreen, fontWeight: FontWeight.bold, fontSize: 20))
-                : Text('Expired Items',
-                    style: TextStyle(color: appRed, fontWeight: FontWeight.bold, fontSize: 20)),
-          ),
-          expanded: StreamBuilder(
-            stream: streamSnapshot,
-            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              return ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
-                itemBuilder: (context, index) {
-                  // if (snapshot.hasData) {
-                  //   if (category == 'Fresh') {
-                  //     try {
-                  //       print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
-                  //       if (Utils.showDateDifference(
-                  //                   snapshot.data.documents[index].data['expiryDate'].toDate()) <=
-                  //               0 ||
-                  //           snapshot.data.documents[index].data['expiryDate'].toDate() ==
-                  //               DateTime.now()) {
-                  //         snapshot.data.documents[index].reference.updateData({'isExpired': 'Yes'});
-                  //       }
-                  //     } catch (e) {
-                  //       print(e.toString());
-                  //       print(snapshot.data.documents[index].data['expiryDate'].toDate());
-                  //     }
-                  //   }
-                  // }
-                  if (category == 'Fresh' &&
-                      snapshot.data.documents[index].data['isExpired'] == 'No') {
-                    // TODO: not sure where to put this.
-                    if (Utils.showDateDifference(
-                            snapshot.data.documents[index].data['expiryDate'].toDate()) <=
-                        0) {
-                      print('>>>>>> EXPIRED ITEMS FOUND IN BACKGROUND <<<<<');
-                      snapshot.data.documents[index].reference.updateData({'isExpired': 'Yes'});
-                    }
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
-                      child: ReminderTile(
+  _showExpiringSoonItems(BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
+    return StreamBuilder(
+      stream: streamSnapshot,
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        return Container(
+            height: 125,
+            child: snapshot.hasData && snapshot.data.documents.length != 0
+                ? PageView.builder(
+                    controller: _pageController,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
+                    itemBuilder: (context, index) {
+                      if (snapshot.data.documents.length != 0) {
+                        try {
+                          print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
+                          if (Utils.showDateDifference(
+                                      snapshot.data.documents[index].data['expiryDate'].toDate()) <=
+                                  0 ||
+                              snapshot.data.documents[index].data['expiryDate'].toDate() ==
+                                  DateTime.now()) {
+                            snapshot.data.documents[index].reference
+                                .updateData({'isExpired': 'Yes'});
+                          }
+                        } catch (e) {
+                          print(e.toString());
+                          print(snapshot.data.documents[index].data['expiryDate'].toDate());
+                        }
+                      }
+                      return ReminderTile(
                         documentRef: snapshot.data.documents[index],
                         popUpPrimaryMessage: 'Mark as complete',
-                      ),
-                    );
-                  } else if (category == 'Expired' &&
-                      snapshot.data.documents[index].data['isExpired'] == 'Yes') {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
-                      child: ReminderTile(
-                        documentRef: snapshot.data.documents[index],
-                        popUpPrimaryMessage: 'Mark as complete',
-                      ),
-                    );
-                  } else {
-                    return Container();
-                  }
-                },
-              );
-            },
-          ),
-        ),
-      ),
+                      ).marginOnly(right: 10);
+                    },
+                  )
+                : Align(
+                    alignment: AlignmentDirectional.center,
+                    child: Text('There are no reminders expiring soon.',
+                        style: errorTextStyle.copyWith(color: appBlack)),
+                  ));
+      },
     );
   }
 
@@ -180,25 +152,20 @@ class _HomeState extends State<Home> {
     final reminderRef =
         Firestore.instance.collection('appUsers').document(user.uid).collection('reminders');
 
-    return Padding(
-      padding: EdgeInsets.only(top: 8.0),
+    return Container(
+      width: Get.width,
+      padding: EdgeInsets.only(top: 15),
+      margin: EdgeInsets.fromLTRB(20, 30, 20, 50),
+      decoration: BoxDecoration(boxShadow: [
+        BoxShadow(offset: Offset(0, 10), blurRadius: 30, color: appGreen.withOpacity(0.6))
+      ], color: Colors.grey[100], borderRadius: BorderRadius.all(Radius.circular(30))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
-          padding: EdgeInsets.only(left: 10, bottom: 10.0),
-          child: Row(
-            children: [
-              CircleAvatar(backgroundColor: appListTileGrey),
-              Padding(
-                padding: EdgeInsets.only(left: 10.0),
-                child: Text('Completed Items',
-                    style: TextStyle(
-                        color: appListTileGrey, fontWeight: FontWeight.bold, fontSize: 20)),
-              ),
-            ],
-          ),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 15),
+          child: Text('Completed items',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
         ),
         Container(
-          height: Get.height * 0.5,
           child: StreamBuilder(
             key: UniqueKey(),
             stream: streamSnapshot,
@@ -207,141 +174,109 @@ class _HomeState extends State<Home> {
                 return SpinKitFadingCube(color: appBottomNavGreen, size: 70);
               return snapshot.data.documents.length != 0
                   ? new ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      padding: EdgeInsets.all(0),
                       key: UniqueKey(),
-                      scrollDirection: Axis.vertical,
                       itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
-                      controller: PageController(viewportFraction: 0.7),
-                      // onPageChanged: (int newIndex) =>
-                      //     setState(() => _index = newIndex),
                       itemBuilder: (context, index) {
-                        return InkWell(
-                          key: UniqueKey(),
-                          splashColor: appGreen,
-                          onTap: () =>
-                              Get.to(() => EditReminder(docToEdit: snapshot.data.documents[index])),
-                          onLongPress: () {
-                            showCupertinoModalPopup(
-                                context: context,
-                                builder: (BuildContext context) => CupertinoActionSheet(
-                                      actions: [
-                                        CupertinoActionSheetAction(
-                                            isDefaultAction: true,
-                                            onPressed: () {
-                                              if (Utils.showDateDifference(snapshot
-                                                      .data.documents[index].data['reminderDate']
-                                                      .toDate()) >
-                                                  0) {
-                                                Utils.scheduleReminder(
-                                                    snapshot
-                                                        .data.documents[index].data['reminderDate']
-                                                        .toDate(),
-                                                    snapshot
-                                                        .data.documents[index].data['reminderName'],
-                                                    Utils.getUniqueRandomNumber());
-                                              }
-                                              reminderRef
-                                                  .add({
-                                                    'notificationID': snapshot.data.documents[index]
-                                                        .data['notificationID'],
-                                                    'productImage': snapshot
-                                                        .data.documents[index].data['productImage'],
-                                                    'productBarcode': snapshot.data.documents[index]
-                                                        .data['productBarcode'],
-                                                    'reminderName': snapshot
-                                                        .data.documents[index].data['reminderName'],
-                                                    'reminderDate': snapshot
-                                                        .data.documents[index].data['reminderDate'],
-                                                    'reminderDesc': snapshot
-                                                        .data.documents[index].data['reminderDesc'],
-                                                    'isExpired': snapshot
-                                                        .data.documents[index].data['isExpired'],
-                                                    'expiryDate': snapshot
-                                                        .data.documents[index].data['expiryDate'],
-                                                  })
-                                                  .whenComplete(() => Utils.deleteReminder(
-                                                      snapshot.data.documents[index], false))
-                                                  .whenComplete(() => Navigator.pop(context))
-                                                  .whenComplete(
-                                                      () => Utils.showToast('Reminder restored.'));
-                                            },
-                                            child: Text('Restore')),
-                                        CupertinoActionSheetAction(
-                                            isDestructiveAction: true,
-                                            onPressed: () => Utils.deleteReminder(
-                                                    snapshot.data.documents[index], true)
-                                                .whenComplete(() => Navigator.pop(context))
-                                                .whenComplete(
-                                                    () => Utils.showToast('Reminder deleted.')),
-                                            child: Text('Delete')),
-                                      ],
-                                      cancelButton: CupertinoActionSheetAction(
-                                        child: Text('Cancel'),
-                                        onPressed: () => Navigator.pop(context),
-                                      ),
-                                    ));
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 20),
-                            height: 270,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                      image: snapshot.data.documents[index].data['productImage'] ==
-                                              null
-                                          ? DecorationImage(
-                                              image: AssetImage('assets/image_placeholder.png'),
-                                              fit: BoxFit.cover)
-                                          : DecorationImage(
-                                              image: NetworkImage(snapshot
-                                                  .data.documents[index].data['productImage']),
-                                              fit: BoxFit.cover),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.grey)),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(8, 5, 8, 5),
+                        return Padding(
+                          padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(20))),
+                            child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                splashColor: appGreen,
+                                onTap: () => Get.to(
+                                    () => EditReminder(docToEdit: snapshot.data.documents[index])),
+                                onLongPress: () {
+                                  showCupertinoModalPopup(
+                                      context: context,
+                                      builder: (BuildContext context) => CupertinoActionSheet(
+                                            actions: [
+                                              CupertinoActionSheetAction(
+                                                  isDefaultAction: true,
+                                                  onPressed: () {
+                                                    if (Utils.showDateDifference(snapshot.data
+                                                            .documents[index].data['reminderDate']
+                                                            .toDate()) >
+                                                        0) {
+                                                      Utils.scheduleReminder(
+                                                          snapshot.data.documents[index]
+                                                              .data['reminderDate']
+                                                              .toDate(),
+                                                          snapshot.data.documents[index]
+                                                              .data['reminderName'],
+                                                          Utils.getUniqueRandomNumber());
+                                                    }
+                                                    reminderRef
+                                                        .add({
+                                                          'notificationID': snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .data['notificationID'],
+                                                          'productImage': snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .data['productImage'],
+                                                          'productBarcode': snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .data['productBarcode'],
+                                                          'reminderName': snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .data['reminderName'],
+                                                          'reminderDate': snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .data['reminderDate'],
+                                                          'reminderDesc': snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .data['reminderDesc'],
+                                                          'isExpired': snapshot.data
+                                                              .documents[index].data['isExpired'],
+                                                          'expiryDate': snapshot.data
+                                                              .documents[index].data['expiryDate'],
+                                                        })
+                                                        .whenComplete(() => Utils.deleteReminder(
+                                                            snapshot.data.documents[index], false))
+                                                        .whenComplete(() => Navigator.pop(context))
+                                                        .whenComplete(() =>
+                                                            Utils.showToast('Reminder restored.'));
+                                                  },
+                                                  child: Text('Restore')),
+                                              CupertinoActionSheetAction(
+                                                  isDestructiveAction: true,
+                                                  onPressed: () => Utils.deleteReminder(
+                                                          snapshot.data.documents[index], true)
+                                                      .whenComplete(() => Navigator.pop(context))
+                                                      .whenComplete(() =>
+                                                          Utils.showToast('Reminder deleted.')),
+                                                  child: Text('Delete')),
+                                            ],
+                                            cancelButton: CupertinoActionSheetAction(
+                                              child: Text('Cancel'),
+                                              onPressed: () => Navigator.pop(context),
+                                            ),
+                                          ));
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.all(20.0),
                                   child: Text(
                                     snapshot.data.documents[index].data['reminderName'],
-                                    style: errorTextStyle.copyWith(color: appBottomNavGreen),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 18, color: appBlack),
                                   ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
-                                  child: Text(
-                                    Utils.showDateDifference(snapshot
-                                                .data.documents[index].data['expiryDate']
-                                                .toDate()) <=
-                                            0
-                                        ? 'Expired on: ' +
-                                            dateFormat.format(snapshot
-                                                .data.documents[index].data['expiryDate']
-                                                .toDate())
-                                        : 'Expiring on: ' +
-                                            dateFormat.format(snapshot
-                                                .data.documents[index].data['expiryDate']
-                                                .toDate()),
-                                    style: Utils.showDateDifference(snapshot
-                                                .data.documents[index].data['expiryDate']
-                                                .toDate()) <=
-                                            0
-                                        ? errorTextStyle.copyWith(fontSize: 14)
-                                        : TextStyle(),
-                                  ),
-                                )
-                              ],
-                            ),
+                                )),
                           ),
                         );
                       })
                   : Align(
                       alignment: AlignmentDirectional.topCenter,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 20.0),
+                        padding: EdgeInsets.only(top: 20.0, bottom: 40),
                         child: Text('There is no completed reminders.',
                             style: errorTextStyle.copyWith(color: appBlack)),
                       ),

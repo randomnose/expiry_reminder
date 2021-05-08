@@ -1,7 +1,5 @@
 import 'package:expiry_reminder/models/user.dart';
 import 'package:expiry_reminder/screens/form/edit_reminder.dart';
-import 'package:expiry_reminder/screens/home/home.dart';
-import 'package:expiry_reminder/screens/home/index.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/shared_function.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,61 +32,66 @@ class _ReminderTileState extends State<ReminderTile> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: 8.0),
-      child: InkWell(
-        onTap: () => Get.to(() => EditReminder(docToEdit: widget.documentRef)),
-        onLongPress: () {
-          showCupertinoModalPopup(
-              context: context,
-              builder: (BuildContext context) => CupertinoActionSheet(
-                    actions: [
-                      CupertinoActionSheetAction(
-                          isDefaultAction: true,
-                          onPressed: () {
-                            Utils.deleteSpecificScheduledReminder(
-                                widget.documentRef.data['notificationID']);
-                            completedReminders
-                                .add({
-                                  'notificationID': widget.documentRef.data['notificationID'],
-                                  'productImage': widget.documentRef.data['productImage'],
-                                  'productBarcode': widget.documentRef.data['productBarcode'],
-                                  'reminderName': widget.documentRef.data['reminderName'],
-                                  'reminderDate': widget.documentRef.data['reminderDate'],
-                                  'reminderDesc': widget.documentRef.data['reminderDesc'],
-                                  'isExpired': widget.documentRef.data['isExpired'],
-                                  'expiryDate': widget.documentRef.data['expiryDate'],
-                                })
-                                .whenComplete(() => Utils.deleteReminder(widget.documentRef, false))
+      child: Card(
+        shadowColor: appGreen,
+        elevation: 5,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          splashColor: appGreen,
+          onTap: () => Get.to(() => EditReminder(docToEdit: widget.documentRef)),
+          onLongPress: () {
+            showCupertinoModalPopup(
+                context: context,
+                builder: (BuildContext context) => CupertinoActionSheet(
+                      actions: [
+                        CupertinoActionSheetAction(
+                            isDefaultAction: true,
+                            onPressed: () {
+                              Utils.deleteSpecificScheduledReminder(
+                                  widget.documentRef.data['notificationID']);
+                              completedReminders
+                                  .add({
+                                    'notificationID': widget.documentRef.data['notificationID'],
+                                    'productImage': widget.documentRef.data['productImage'],
+                                    'productBarcode': widget.documentRef.data['productBarcode'],
+                                    'reminderName': widget.documentRef.data['reminderName'],
+                                    'reminderDate': widget.documentRef.data['reminderDate'],
+                                    'reminderDesc': widget.documentRef.data['reminderDesc'],
+                                    'isExpired': widget.documentRef.data['isExpired'],
+                                    'expiryDate': widget.documentRef.data['expiryDate'],
+                                  })
+                                  .whenComplete(
+                                      () => Utils.deleteReminder(widget.documentRef, false))
+                                  .whenComplete(() => Navigator.pop(context))
+                                  .whenComplete(() => Utils.showToast('Marked as complete.'));
+                            },
+                            child: Text(widget.popUpPrimaryMessage)),
+                        CupertinoActionSheetAction(
+                            isDestructiveAction: true,
+                            onPressed: () => Utils.deleteReminder(widget.documentRef, true)
                                 .whenComplete(() => Navigator.pop(context))
-                                .whenComplete(() => Utils.showToast('Marked as complete.'));
-                          },
-                          child: Text(widget.popUpPrimaryMessage)),
-                      CupertinoActionSheetAction(
-                          isDestructiveAction: true,
-                          onPressed: () => Utils.deleteReminder(widget.documentRef, true)
-                              .whenComplete(() => Navigator.pop(context))
-                              .whenComplete(() => Utils.showToast('Reminder deleted.')),
-                          child: Text('Delete')),
-                    ],
-                    cancelButton: CupertinoActionSheetAction(
-                      child: Text('Cancel'),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ));
-        },
-        child: Card(
-          elevation: 5,
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                .whenComplete(() => Utils.showToast('Reminder deleted.')),
+                            child: Text('Delete')),
+                      ],
+                      cancelButton: CupertinoActionSheetAction(
+                        child: Text('Cancel'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ));
+          },
           child: Container(
             height: 110,
             child: Row(
               children: [
                 widget.documentRef.data['productImage'] == null
                     ? Image.asset(
-                        'assets/image_placeholder.jpg',
+                        'assets/image_placeholder.png',
                         fit: BoxFit.cover,
                         height: 110,
                         width: 100,
+                        color: appButtonBrown,
                       )
                     : Image.network(
                         widget.documentRef.data['productImage'],
@@ -108,17 +111,19 @@ class _ReminderTileState extends State<ReminderTile> {
                             widget.documentRef.data['reminderName'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 20),
+                            style: TextStyle(fontSize: 19),
                           ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 5.0),
                           child: Text(
-                              widget.documentRef.data['reminderDesc'] == ''
-                                  ? 'No description'
-                                  : widget.documentRef.data['reminderDesc'],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
+                            widget.documentRef.data['reminderDesc'] == ''
+                                ? 'No description'
+                                : widget.documentRef.data['reminderDesc'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 16),
+                          ),
                         ),
                         Utils.showDateDifference(widget.documentRef.data['expiryDate'].toDate()) <=
                                 0

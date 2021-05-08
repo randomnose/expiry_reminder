@@ -21,7 +21,7 @@ class IndexPageState extends State<IndexPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[100],
       body: tabs[_currentIndex],
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
@@ -31,18 +31,18 @@ class IndexPageState extends State<IndexPage> {
               elevation: 5,
             )
           : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
       bottomNavigationBar: BottomAppBar(
         notchMargin: 6,
-        color: appBgGrey,
+        color: appBottomNavGreen,
         shape: CircularNotchedRectangle(),
         clipBehavior: Clip.antiAlias,
         child: BottomNavigationBar(
           elevation: 0,
           currentIndex: _currentIndex,
-          backgroundColor: appBgGrey,
-          selectedItemColor: appBlack,
-          unselectedItemColor: appListTileGrey,
+          backgroundColor: appBottomNavGreen,
+          selectedItemColor: appBgGrey,
+          unselectedItemColor: appGreen,
           selectedFontSize: 17,
           unselectedFontSize: 14,
           selectedIconTheme: IconThemeData(size: 30),

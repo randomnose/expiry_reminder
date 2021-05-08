@@ -28,7 +28,7 @@ class _SettingsState extends State<Settings> {
         Container(
             width: Get.width,
             padding: EdgeInsets.fromLTRB(20, 60, 20, 15),
-            decoration: BoxDecoration(color: appGreen),
+            decoration: BoxDecoration(color: appGreen, boxShadow: [BoxShadow(color: appGreen.withOpacity(0.4), offset: Offset(0, 1), blurRadius: 30)]),
             child: RichText(
                 text: TextSpan(
               text: 'Settings',

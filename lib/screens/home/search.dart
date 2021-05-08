@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -28,6 +29,8 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _allReminders = [];
+    _resultsList = [];
     super.dispose();
   }
 
@@ -52,11 +55,9 @@ class _SearchPageState extends State<SearchPage> {
         var barcode = reminder['productBarcode'];
         if (name.contains(_searchController.text.trim().toLowerCase())) {
           showResults.add(reminder);
-        }
-        if (description.contains(_searchController.text.trim().toLowerCase())) {
+        } else if (description.contains(_searchController.text.trim().toLowerCase())) {
           showResults.add(reminder);
-        }
-        if (barcode.contains(_searchController.text.trim().toLowerCase())) {
+        } else if (barcode.contains(_searchController.text.trim().toLowerCase())) {
           showResults.add(reminder);
         }
       }
@@ -92,6 +93,7 @@ class _SearchPageState extends State<SearchPage> {
           onTap: () => FocusScope.of(context).unfocus(),
           child: Stack(children: [
             Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                     padding: EdgeInsets.fromLTRB(20, 50, 20, 25),
@@ -114,9 +116,7 @@ class _SearchPageState extends State<SearchPage> {
                                 TextSpan(
                                     text: 'reminders',
                                     style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: appBlack,
-                                        fontSize: 24))
+                                        fontWeight: FontWeight.bold, color: appBlack, fontSize: 24))
                               ])),
                         ),
                         Container(
@@ -161,8 +161,7 @@ class _SearchPageState extends State<SearchPage> {
                     padding: EdgeInsets.fromLTRB(20, 15, 20, 10),
                     child: Text(
                       'Search results',
-                      style:
-                          TextStyle(fontSize: 24, color: appBlack, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 24, color: appBlack, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Padding(
@@ -173,30 +172,57 @@ class _SearchPageState extends State<SearchPage> {
                 ]),
                 _resultsList.length == 0
                     ? Padding(
-                      padding: EdgeInsets.only(top: 60.0),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 10.0),
-                            child: Icon(CupertinoIcons.ellipses_bubble,
-                                size: 50, color: appListTileGrey),
-                          ),
-                          Text('Oops there is no results',
-                              style: errorTextStyle.copyWith(color: appListTileGrey)),
-                        ],
-                      ),
-                    )
+                        padding: EdgeInsets.only(top: 60.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 10.0),
+                              child: Icon(CupertinoIcons.ellipses_bubble,
+                                  size: 50, color: appListTileGrey),
+                            ),
+                            Text('Oops there is no results',
+                                style: errorTextStyle.copyWith(color: appListTileGrey)),
+                          ],
+                        ),
+                      )
                     :
                     // list view for search result
+                    // Expanded(
+                    //     child: ListView.builder(
+                    //       shrinkWrap: true,
+                    //       padding: EdgeInsets.symmetric(horizontal: 20),
+                    //       itemCount: _resultsList.length,
+                    //       itemBuilder: (BuildContext context, int index) {
+                    //         print(
+                    //             'The current item in result is -> ${_resultsList[index].data['reminderName']}');
+                    //         return ReminderTile(
+                    //             documentRef: _resultsList[index],
+                    //             popUpPrimaryMessage: 'Mark as complete');
+                    //       },
+                    //     ),
+                    //   )
                     Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: _resultsList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return ReminderTile(
-                                documentRef: _resultsList[index],
-                                popUpPrimaryMessage: 'Mark as complete');
+                        child: FutureBuilder(
+                          future: getReminderSnapshot(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.none &&
+                                snapshot.hasData == null) {
+                              return SpinKitFadingCube(color: appGreen, size: 70);
+                            }
+                            return Padding(
+                              padding: EdgeInsets.fromLTRB(20, 15, 20, 20),
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                padding: EdgeInsets.all(0),
+                                itemCount: _resultsList.length,
+                                itemBuilder: (context, index) {
+                                  return ReminderTile(
+                                    documentRef: _resultsList[index],
+                                    popUpPrimaryMessage: 'Mark as complete',
+                                  );
+                                },
+                              ),
+                            );
                           },
                         ),
                       )

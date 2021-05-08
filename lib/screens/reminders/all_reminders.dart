@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-// TODO: change to streambuilder
 class AllReminders extends StatefulWidget {
   @override
   _AllRemindersState createState() => _AllRemindersState();
