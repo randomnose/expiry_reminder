@@ -1,5 +1,4 @@
 import 'package:expiry_reminder/models/user.dart';
-import 'package:expiry_reminder/screens/form/edit_reminder.dart';
 import 'package:expiry_reminder/screens/home/search.dart';
 import 'package:expiry_reminder/screens/reminders/all_reminders.dart';
 import 'package:expiry_reminder/shared/reminder_tile.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:expandable/expandable.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -53,7 +51,7 @@ class _HomeState extends State<Home> {
                       bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25)),
                   boxShadow: [
                     BoxShadow(
-                        offset: Offset(0, 1), blurRadius: 30, color: appGreen.withOpacity(0.5))
+                        offset: Offset(0, 10), blurRadius: 30, color: appGreen.withOpacity(0.5))
                   ]),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,8 +138,11 @@ class _HomeState extends State<Home> {
                   )
                 : Align(
                     alignment: AlignmentDirectional.center,
-                    child: Text('There are no reminders expiring soon.',
-                        style: errorTextStyle.copyWith(color: appBlack)),
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('Create a reminder to be reminded of your food\'s expiry date!',
+                          style: errorTextStyle.copyWith(color: appBlack)),
+                    ),
                   ));
       },
     );
@@ -156,9 +157,7 @@ class _HomeState extends State<Home> {
       width: Get.width,
       padding: EdgeInsets.only(top: 15),
       margin: EdgeInsets.fromLTRB(20, 30, 20, 50),
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(offset: Offset(0, 10), blurRadius: 30, color: appGreen.withOpacity(0.6))
-      ], color: Colors.grey[100], borderRadius: BorderRadius.all(Radius.circular(30))),
+      decoration: cardDecoration,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
           padding: EdgeInsets.fromLTRB(20, 0, 20, 15),
@@ -166,6 +165,7 @@ class _HomeState extends State<Home> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
         ),
         Container(
+          constraints: BoxConstraints(minHeight: Get.height * 0.35 - 40),
           child: StreamBuilder(
             key: UniqueKey(),
             stream: streamSnapshot,
@@ -181,15 +181,13 @@ class _HomeState extends State<Home> {
                       itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
                           child: Card(
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(Radius.circular(20))),
                             child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: appGreen,
-                                onTap: () => Get.to(
-                                    () => EditReminder(docToEdit: snapshot.data.documents[index])),
                                 onLongPress: () {
                                   showCupertinoModalPopup(
                                       context: context,
@@ -276,8 +274,8 @@ class _HomeState extends State<Home> {
                   : Align(
                       alignment: AlignmentDirectional.topCenter,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 20.0, bottom: 40),
-                        child: Text('There is no completed reminders.',
+                        padding: EdgeInsets.fromLTRB(20, 20, 20, 40),
+                        child: Text('Start filling up this section by consuming your food!',
                             style: errorTextStyle.copyWith(color: appBlack)),
                       ),
                     );

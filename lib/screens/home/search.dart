@@ -129,7 +129,7 @@ class _SearchPageState extends State<SearchPage> {
                                 BoxShadow(
                                     offset: Offset(0, 10),
                                     blurRadius: 50,
-                                    color: appButtonBrown.withOpacity(0.4))
+                                    color: appBottomNavGreen.withOpacity(0.3))
                               ]),
                           child: TextField(
                             textAlignVertical: TextAlignVertical.center,

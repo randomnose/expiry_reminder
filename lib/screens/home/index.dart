@@ -1,6 +1,6 @@
 import 'package:expiry_reminder/screens/form/add_reminder.dart';
 import 'package:expiry_reminder/screens/home/home.dart';
-import 'package:expiry_reminder/screens/home/settings.dart';
+import 'package:expiry_reminder/screens/home/settings/settings.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

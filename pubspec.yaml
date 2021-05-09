@@ -48,6 +48,7 @@ dev_dependencies:
   flutter_local_notifications: ^4.0.1+2
   flutter_native_timezone: ^1.0.4
   fluttertoast: ^7.1.8
+  url_launcher: ^5.7.10
   
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

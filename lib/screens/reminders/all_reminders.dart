@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/models/user.dart';
+import 'package:expiry_reminder/screens/home/search.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/reminder_tile.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 
 class AllReminders extends StatefulWidget {
   @override
@@ -43,6 +45,11 @@ class _AllRemindersState extends State<AllReminders> {
             backgroundColor: appGreen,
             title: Text('Reminders',
                 style: TextStyle(fontWeight: FontWeight.bold, color: appBlack, fontSize: 24)),
+            actions: [
+              IconButton(
+                  icon: Icon(Icons.search_rounded, size: 35, color: appBlack),
+                  onPressed: () => Get.to(() => SearchPage()))
+            ],
             bottom: TabBar(
               indicatorColor: appBgGrey,
               indicatorSize: TabBarIndicatorSize.label,

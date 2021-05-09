@@ -111,7 +111,7 @@ class _ReminderTileState extends State<ReminderTile> {
                             widget.documentRef.data['reminderName'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 19),
+                            style: errorTextStyle.copyWith(fontSize: 19, color: appBlack),
                           ),
                         ),
                         Padding(
