@@ -1,3 +1,4 @@
+import 'package:expiry_reminder/screens/authenticate/background/register_background.dart';
 import 'package:expiry_reminder/shared/constants.dart';
 import 'package:expiry_reminder/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
@@ -47,118 +48,97 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return loading
         ? Loading()
-        : Scaffold(
-            backgroundColor: Colors.blueGrey[100],
-            body: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).requestFocus(new FocusNode());
-              },
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(top: 100),
-                        child: Image.asset('assets/logo_no_name.png'),
-                      ),
-                      Text('Account Registration',
-                          style: errorTextStyle.copyWith(
-                              color: appButtonBrown,
-                              fontWeight: FontWeight.bold)),
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: <Widget>[
-                            SizedBox(height: 20.0),
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: textInputDecoration.copyWith(
-                                  hintText: 'Email',
-                                  labelText: 'Email',
-                                  prefixIcon: Icon(Icons.email_outlined)),
-                              validator: (val) =>
-                                  val.isEmpty ? 'Enter an email' : null,
-                              onChanged: (val) {
-                                setState(() => email = val);
-                              },
-                              inputFormatters: [
-                                FilteringTextInputFormatter.deny(
-                                    new RegExp(r"\s\b|\b\s"))
-                              ],
-                            ),
-                            SizedBox(height: 20.0),
-                            TextFormField(
-                              controller: _passwordController,
-                              decoration: textInputDecoration.copyWith(
-                                  hintText: 'Password',
-                                  labelText: 'Password',
-                                  prefixIcon: Icon(CupertinoIcons.lock)),
-                              obscureText: true,
-                              validator: (val) => val.length < 6
-                                  ? 'Enter a password 6+ chars long'
-                                  : null,
-                              onChanged: (val) {
-                                setState(() => password = val);
-                              },
-                            ),
-                            SizedBox(height: 20.0),
-                            ButtonTheme(
-                              minWidth: Get.width * 0.6,
-                              height: 50,
-                              child: RaisedButton(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          new BorderRadius.circular(20)),
-                                  color: appGreen,
-                                  child: Text(
-                                    'REGISTER',
-                                    style: whiteTextStyle,
-                                  ),
-                                  onPressed: () async {
-                                    if (_formKey.currentState.validate()) {
-                                      setState(() {
-                                        loading = true;
-                                      });
-                                      dynamic result = await _auth
-                                          .registerWithEmailAndPassword(
-                                              email: _emailController.text,
-                                              password:
-                                                  _passwordController.text);
-                                      if (result == null) {
-                                        setState(() {
-                                          error =
-                                              'Error: \n Please check your details.';
-                                          loading = false;
-                                        });
-                                      }
-                                    }
-                                  }),
-                            ),
-                            SizedBox(height: 15),
-                            Divider(
-                                height: 10,
-                                color: CupertinoColors.separator,
-                                thickness: 0.7),
-                            TextButton(
-                                child: Text(
-                                  'LOGIN INSTEAD',
-                                  style: greenTextStyle,
-                                ),
-                                onPressed: () {
-                                  widget.toggleView();
-                                }),
-                            Text(
-                              error,
-                              style: errorTextStyle,
-                              textAlign: TextAlign.center,
-                            )
+        : RegisterBg(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(30, 140, 30, 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Account Registration',
+                      style: errorTextStyle.copyWith(
+                          color: appButtonBrown, fontWeight: FontWeight.bold)),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        SizedBox(height: 20.0),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: textInputDecoration.copyWith(
+                              hintText: 'Email',
+                              labelText: 'Email',
+                              prefixIcon: Icon(Icons.email_outlined)),
+                          validator: (val) => val.isEmpty ? 'Enter an email' : null,
+                          onChanged: (val) {
+                            setState(() => email = val);
+                          },
+                          inputFormatters: [
+                            FilteringTextInputFormatter.deny(new RegExp(r"\s\b|\b\s"))
                           ],
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 20.0),
+                        TextFormField(
+                          controller: _passwordController,
+                          decoration: textInputDecoration.copyWith(
+                              hintText: 'Password',
+                              labelText: 'Password',
+                              prefixIcon: Icon(CupertinoIcons.lock)),
+                          obscureText: true,
+                          validator: (val) =>
+                              val.length < 6 ? 'Enter a password 6+ chars long' : null,
+                          onChanged: (val) {
+                            setState(() => password = val);
+                          },
+                        ),
+                        SizedBox(height: 20.0),
+                        ButtonTheme(
+                          minWidth: Get.width,
+                          height: 50,
+                          child: RaisedButton(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: new BorderRadius.circular(20)),
+                              color: appGreen,
+                              child: Text(
+                                'REGISTER',
+                                style: whiteTextStyle,
+                              ),
+                              onPressed: () async {
+                                if (_formKey.currentState.validate()) {
+                                  setState(() {
+                                    loading = true;
+                                  });
+                                  dynamic result = await _auth.registerWithEmailAndPassword(
+                                      email: _emailController.text,
+                                      password: _passwordController.text);
+                                  if (result == null) {
+                                    setState(() {
+                                      error = 'Error: \n Please check your details.';
+                                      loading = false;
+                                    });
+                                  }
+                                }
+                              }),
+                        ),
+                        SizedBox(height: 15),
+                        Divider(height: 10, color: CupertinoColors.separator, thickness: 0.7),
+                        TextButton(
+                            child: Text(
+                              'LOGIN INSTEAD',
+                              style: whiteTextStyle.copyWith(color: appBlack, fontSize: 14),
+                            ),
+                            onPressed: () {
+                              widget.toggleView();
+                            }),
+                        Text(
+                          error,
+                          style: errorTextStyle,
+                          textAlign: TextAlign.center,
+                        )
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           );

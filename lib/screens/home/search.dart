@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -90,13 +91,13 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
         backgroundColor: Colors.grey[200],
         body: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: Stack(children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Stack(children: [
                 Container(
-                    padding: EdgeInsets.fromLTRB(20, 50, 20, 25),
+                    padding: EdgeInsets.fromLTRB(20, 50, 20, 5),
                     decoration: BoxDecoration(
                         color: appGreen,
                         borderRadius: BorderRadius.only(
@@ -153,90 +154,105 @@ class _SearchPageState extends State<SearchPage> {
                               focusedBorder: InputBorder.none,
                             ),
                           ),
-                        )
+                        ),
+                        TextButton.icon(
+                            style: ButtonStyle(
+                                overlayColor: MaterialStateColor.resolveWith(
+                                    (states) => appButtonBrown.withOpacity(0.5)),
+                                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15)))),
+                            onPressed: barcodeScanner,
+                            icon: Icon(
+                              CupertinoIcons.qrcode_viewfinder,
+                              color: appBgGrey,
+                            ),
+                            label: Text(
+                              'Search by scanning barcode',
+                              style: whiteTextStyle,
+                            ))
                       ],
                     )),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20, 15, 20, 10),
-                    child: Text(
-                      'Search results',
-                      style: TextStyle(fontSize: 24, color: appBlack, fontWeight: FontWeight.bold),
-                    ),
+                Positioned(
+                  top: 43,
+                  right: 10,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close),
                   ),
-                  Padding(
-                      padding: EdgeInsets.only(right: 20),
-                      child: Text('${_resultsList.length} results',
+                ),
+              ]),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 15, 20, 0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Search results',
+                        style:
+                            TextStyle(fontSize: 22, color: appBlack, fontWeight: FontWeight.bold),
+                      ),
+                      Text('${_resultsList.length} results',
                           style: whiteTextStyle.copyWith(
-                              color: appBottomNavGreen, fontWeight: FontWeight.bold)))
-                ]),
-                _resultsList.length == 0
-                    ? Padding(
-                        padding: EdgeInsets.only(top: 60.0),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 10.0),
-                              child: Icon(CupertinoIcons.ellipses_bubble,
-                                  size: 50, color: appListTileGrey),
-                            ),
-                            Text('Oops there is no results',
-                                style: errorTextStyle.copyWith(color: appListTileGrey)),
-                          ],
-                        ),
-                      )
-                    :
-                    // list view for search result
-                    // Expanded(
-                    //     child: ListView.builder(
-                    //       shrinkWrap: true,
-                    //       padding: EdgeInsets.symmetric(horizontal: 20),
-                    //       itemCount: _resultsList.length,
-                    //       itemBuilder: (BuildContext context, int index) {
-                    //         print(
-                    //             'The current item in result is -> ${_resultsList[index].data['reminderName']}');
-                    //         return ReminderTile(
-                    //             documentRef: _resultsList[index],
-                    //             popUpPrimaryMessage: 'Mark as complete');
-                    //       },
-                    //     ),
-                    //   )
-                    Expanded(
-                        child: FutureBuilder(
-                          future: getReminderSnapshot(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.none &&
-                                snapshot.hasData == null) {
-                              return SpinKitFadingCube(color: appGreen, size: 70);
-                            }
-                            return Padding(
-                              padding: EdgeInsets.fromLTRB(20, 15, 20, 20),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                padding: EdgeInsets.all(0),
-                                itemCount: _resultsList.length,
-                                itemBuilder: (context, index) {
-                                  return ReminderTile(
-                                    documentRef: _resultsList[index],
-                                    popUpPrimaryMessage: 'Mark as complete',
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      )
-              ],
-            ),
-            Positioned(
-              top: 43,
-              right: 10,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.close),
+                              color: appBottomNavGreen, fontWeight: FontWeight.bold))
+                    ]),
               ),
-            ),
-          ]),
+              _resultsList.length == 0
+                  ? Padding(
+                      padding: EdgeInsets.only(top: 60.0),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 10.0),
+                            child: Icon(CupertinoIcons.ellipses_bubble,
+                                size: 50, color: appListTileGrey),
+                          ),
+                          Text('Oops there is no results',
+                              style: errorTextStyle.copyWith(color: appListTileGrey)),
+                        ],
+                      ),
+                    )
+                  : Expanded(
+                      child: FutureBuilder(
+                        future: getReminderSnapshot(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.none &&
+                              snapshot.hasData == null) {
+                            return SpinKitFadingCube(color: appGreen, size: 70);
+                          }
+                          return Padding(
+                            padding: EdgeInsets.fromLTRB(20, 15, 20, 20),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              padding: EdgeInsets.all(0),
+                              itemCount: _resultsList.length,
+                              itemBuilder: (context, index) {
+                                return ReminderTile(
+                                  documentRef: _resultsList[index],
+                                  popUpPrimaryMessage: 'Mark as complete',
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    )
+            ],
+          ),
         ));
+  }
+
+  Future barcodeScanner() async {
+    var scannedCode =
+        await FlutterBarcodeScanner.scanBarcode('#ca2b2b', 'Cancel', false, ScanMode.BARCODE);
+
+    if (scannedCode == '-1') {
+      print('User cancelled using the barcode reader.');
+    } else {
+      setState(() {
+        _searchController.text = scannedCode;
+      });
+    }
   }
 }

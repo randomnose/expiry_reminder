@@ -79,7 +79,7 @@ class _HomeState extends State<Home> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Expiring soon',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: appBlack)),
                 ButtonTheme(
                     shape:
                         RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
@@ -162,7 +162,7 @@ class _HomeState extends State<Home> {
         Padding(
           padding: EdgeInsets.fromLTRB(20, 0, 20, 15),
           child: Text('Completed items',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: appBlack)),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: appBlack)),
         ),
         Container(
           constraints: BoxConstraints(minHeight: Get.height * 0.35 - 40),

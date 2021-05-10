@@ -48,7 +48,7 @@ class _SettingsState extends State<Settings> {
               child: InkWell(
                 splashColor: appGreen,
                 borderRadius: BorderRadius.circular(15),
-                onTap: () => Get.to(()=> AboutPage()),
+                onTap: () => Get.to(() => AboutPage()),
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child:
@@ -82,7 +82,9 @@ class _SettingsState extends State<Settings> {
                   children: [
                     TextButton(
                       style: ButtonStyle(
-                          overlayColor: MaterialStateProperty.all(appRed.withOpacity(0.3))),
+                          overlayColor: MaterialStateProperty.all(appRed.withOpacity(0.3)),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)))),
                       onPressed: () {
                         showDialog(
                             context: context,
@@ -111,7 +113,9 @@ class _SettingsState extends State<Settings> {
                     ),
                     TextButton(
                       style: ButtonStyle(
-                          overlayColor: MaterialStateProperty.all(appRed.withOpacity(0.3))),
+                          overlayColor: MaterialStateProperty.all(appRed.withOpacity(0.3)),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)))),
                       onPressed: () {
                         showDialog(
                             context: context,
