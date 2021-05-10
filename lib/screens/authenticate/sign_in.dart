@@ -51,13 +51,12 @@ class _SignInState extends State<SignIn> {
         ? Loading()
         : SignInBg(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30),
+              padding: EdgeInsets.fromLTRB(30, 140, 30, 30),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(height: 75.0),
                     TextFormField(
                       controller: _emailController,
                       decoration: textInputDecoration.copyWith(
