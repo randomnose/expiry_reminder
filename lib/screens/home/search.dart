@@ -65,9 +65,11 @@ class _SearchPageState extends State<SearchPage> {
     } else {
       showResults = [];
     }
-    setState(() {
-      _resultsList = showResults;
-    });
+    if (mounted) {
+      setState(() {
+        _resultsList = showResults;
+      });
+    }
   }
 
   getReminderSnapshot() async {
@@ -79,9 +81,11 @@ class _SearchPageState extends State<SearchPage> {
         .orderBy('expiryDate')
         .getDocuments();
 
-    setState(() {
-      _allReminders = reminderRef.documents;
-    });
+    if (mounted) {
+      setState(() {
+        _allReminders = reminderRef.documents;
+      });
+    }
     searchResultsList();
     return reminderRef.documents;
   }
