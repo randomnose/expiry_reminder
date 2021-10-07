@@ -62,16 +62,16 @@ class _AddNewReminder extends State<AddNewReminder> {
   @override
   Widget build(BuildContext context) {
     bool isKeebActive = MediaQuery.of(context).viewInsets.bottom != 0.0;
-    final user = Provider.of<User>(context);
+    final user = Provider.of<AppUser>(context);
 
     CollectionReference reminderCollection =
-        Firestore.instance.collection('appUsers').document(user.uid).collection('reminders');
+        FirebaseFirestore.instance.collection('appUsers').doc(user.uid).collection('reminders');
 
     return loading
         ? Loading()
         : Scaffold(
             appBar: CupertinoNavigationBar(
-              actionsForegroundColor: Colors.black,
+              // actionsForegroundColor: Colors.black,
               backgroundColor: appGreen,
               middle: Text(
                 'Add reminder',

@@ -19,9 +19,9 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     final AuthService _auth = AuthService();
-    final user = Provider.of<User>(context);
+    final user = Provider.of<AppUser>(context);
     final reminderRef =
-        Firestore.instance.collection('appUsers').document(user.uid).collection('reminders');
+        FirebaseFirestore.instance.collection('appUsers').doc(user.uid).collection('reminders');
 
     return SingleChildScrollView(
         child: Column(
@@ -76,6 +76,7 @@ class _SettingsState extends State<Settings> {
                       style: errorTextStyle.copyWith(color: appBlack, fontSize: 16)),
                 ),
               ),
+              collapsed: Container(),
               expanded: Padding(
                 padding: EdgeInsets.only(left: 8.0, bottom: 8),
                 child: Column(
@@ -171,9 +172,9 @@ class _SettingsState extends State<Settings> {
   }
 
   deleteAllEntries(CollectionReference collection) async {
-    await collection.getDocuments().then((snapshot) {
-      if (snapshot.documents.length != 0) {
-        for (DocumentSnapshot doc in snapshot.documents) {
+    await collection.get().then((snapshot) {
+      if (snapshot.docs.length != 0) {
+        for (DocumentSnapshot doc in snapshot.docs) {
           Utils.deleteReminder(doc, true).catchError((onError) => print(onError));
         }
         Utils.showToast('Active reminders deleted.');

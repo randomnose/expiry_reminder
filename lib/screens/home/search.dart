@@ -73,21 +73,21 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   getReminderSnapshot() async {
-    final user = Provider.of<User>(context);
-    var reminderRef = await Firestore.instance
+    final user = Provider.of<AppUser>(context);
+    var reminderRef = await FirebaseFirestore.instance
         .collection('appUsers')
-        .document(user.uid)
+        .doc(user.uid)
         .collection('reminders')
         .orderBy('expiryDate')
-        .getDocuments();
+        .get();
 
     if (mounted) {
       setState(() {
-        _allReminders = reminderRef.documents;
+        _allReminders = reminderRef.docs;
       });
     }
     searchResultsList();
-    return reminderRef.documents;
+    return reminderRef.docs;
   }
 
   @override

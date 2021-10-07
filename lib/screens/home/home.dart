@@ -19,21 +19,22 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final dateFormat = new DateFormat.yMd();
-  final PageController _pageController = PageController(initialPage: 0, viewportFraction: 0.9);
+  final PageController _pageController =
+      PageController(initialPage: 0, viewportFraction: 0.9);
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<User>(context);
-    final reminderRef = Firestore.instance
+    final user = Provider.of<AppUser>(context);
+    final reminderRef = FirebaseFirestore.instance
         .collection('appUsers')
-        .document(user.uid)
+        .doc(user.uid)
         .collection('reminders')
         .where('isExpired', isEqualTo: 'No')
         .orderBy('expiryDate');
 
-    final completedReminders = Firestore.instance
+    final completedReminders = FirebaseFirestore.instance
         .collection('appUsers')
-        .document(user.uid)
+        .doc(user.uid)
         .collection('completedReminders')
         .orderBy('expiryDate');
 
@@ -48,10 +49,13 @@ class _HomeState extends State<Home> {
               decoration: BoxDecoration(
                   color: appGreen,
                   borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25)),
+                      bottomLeft: Radius.circular(25),
+                      bottomRight: Radius.circular(25)),
                   boxShadow: [
                     BoxShadow(
-                        offset: Offset(0, 10), blurRadius: 30, color: appGreen.withOpacity(0.5))
+                        offset: Offset(0, 10),
+                        blurRadius: 30,
+                        color: appGreen.withOpacity(0.5))
                   ]),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -61,12 +65,16 @@ class _HomeState extends State<Home> {
                       text: TextSpan(
                           text: 'Expiry\n',
                           style: TextStyle(
-                              fontSize: 30, fontWeight: FontWeight.bold, color: appBgGrey),
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: appBgGrey),
                           children: [
                         TextSpan(
                             text: 'Reminder',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, color: appBlack, fontSize: 24))
+                                fontWeight: FontWeight.bold,
+                                color: appBlack,
+                                fontSize: 24))
                       ])),
                   IconButton(
                       icon: Icon(Icons.search_rounded, size: 35),
@@ -79,10 +87,13 @@ class _HomeState extends State<Home> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Expiring soon',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: appBlack)),
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: appBlack)),
                 ButtonTheme(
-                    shape:
-                        RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
                     splashColor: appGreen.withOpacity(0.5),
                     child: RaisedButton(
                       color: appGreen,
@@ -102,36 +113,41 @@ class _HomeState extends State<Home> {
     );
   }
 
-  _showExpiringSoonItems(BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
+  _showExpiringSoonItems(
+      BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
     return StreamBuilder(
       stream: streamSnapshot,
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         return Container(
             height: 125,
-            child: snapshot.hasData && snapshot.data.documents.length != 0
+            child: snapshot.hasData && snapshot.data.docs.length != 0
                 ? PageView.builder(
                     controller: _pageController,
                     scrollDirection: Axis.horizontal,
-                    itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
+                    itemCount: snapshot.hasData ? snapshot.data.docs.length : 0,
                     itemBuilder: (context, index) {
-                      if (snapshot.data.documents.length != 0) {
+                      if (snapshot.data.docs.length != 0) {
                         try {
-                          print('>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
-                          if (Utils.showDateDifference(
-                                      snapshot.data.documents[index].data['expiryDate'].toDate()) <=
+                          print(
+                              '>>>>>> CHECKING FOR EXPIRED ITEMS IN BACKGROUND <<<<<');
+                          if (Utils.showDateDifference(snapshot
+                                      .data.docs[index]['expiryDate']
+                                      .toDate()) <=
                                   0 ||
-                              snapshot.data.documents[index].data['expiryDate'].toDate() ==
+                              snapshot.data.docs[index]['expiryDate']
+                                      .toDate() ==
                                   DateTime.now()) {
-                            snapshot.data.documents[index].reference
-                                .updateData({'isExpired': 'Yes'});
+                            snapshot.data.docs[index].reference
+                                .update({'isExpired': 'Yes'});
                           }
                         } catch (e) {
                           print(e.toString());
-                          print(snapshot.data.documents[index].data['expiryDate'].toDate());
+                          print(
+                              snapshot.data.docs[index]['expiryDate'].toDate());
                         }
                       }
                       return ReminderTile(
-                        documentRef: snapshot.data.documents[index],
+                        documentRef: snapshot.data.docs[index],
                         popUpPrimaryMessage: 'Mark as complete',
                       ).marginOnly(right: 10);
                     },
@@ -140,7 +156,8 @@ class _HomeState extends State<Home> {
                     alignment: AlignmentDirectional.center,
                     child: Padding(
                       padding: EdgeInsets.all(20.0),
-                      child: Text('Create a reminder to be reminded of your food\'s expiry date!',
+                      child: Text(
+                          'Create a reminder to be reminded of your food\'s expiry date!',
                           style: errorTextStyle.copyWith(color: appBlack)),
                     ),
                   ));
@@ -148,10 +165,13 @@ class _HomeState extends State<Home> {
     );
   }
 
-  _showCompletedItems(BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
-    final user = Provider.of<User>(context);
-    final reminderRef =
-        Firestore.instance.collection('appUsers').document(user.uid).collection('reminders');
+  _showCompletedItems(
+      BuildContext context, Stream<QuerySnapshot> streamSnapshot) {
+    final user = Provider.of<AppUser>(context);
+    final reminderRef = FirebaseFirestore.instance
+        .collection('appUsers')
+        .doc(user.uid)
+        .collection('reminders');
 
     return Container(
       width: Get.width,
@@ -162,7 +182,8 @@ class _HomeState extends State<Home> {
         Padding(
           padding: EdgeInsets.fromLTRB(20, 0, 20, 15),
           child: Text('Completed items',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: appBlack)),
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.bold, color: appBlack)),
         ),
         Container(
           constraints: BoxConstraints(minHeight: Get.height * 0.35 - 40),
@@ -172,100 +193,130 @@ class _HomeState extends State<Home> {
             builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
               if (snapshot.data == null)
                 return SpinKitFadingCube(color: appBottomNavGreen, size: 70);
-              return snapshot.data.documents.length != 0
+              return snapshot.data.docs.length != 0
                   ? new ListView.builder(
                       physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       padding: EdgeInsets.all(0),
                       key: UniqueKey(),
-                      itemCount: snapshot.hasData ? snapshot.data.documents.length : 0,
+                      itemCount:
+                          snapshot.hasData ? snapshot.data.docs.length : 0,
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
                           child: Card(
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(20))),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20))),
                             child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: appGreen,
                                 onLongPress: () {
                                   showCupertinoModalPopup(
                                       context: context,
-                                      builder: (BuildContext context) => CupertinoActionSheet(
+                                      builder: (BuildContext context) =>
+                                          CupertinoActionSheet(
                                             actions: [
                                               CupertinoActionSheetAction(
                                                   isDefaultAction: true,
                                                   onPressed: () {
-                                                    if (Utils.showDateDifference(snapshot.data
-                                                            .documents[index].data['reminderDate']
-                                                            .toDate()) >
+                                                    if (Utils.showDateDifference(
+                                                            snapshot
+                                                                .data
+                                                                .docs[index][
+                                                                    'reminderDate']
+                                                                .toDate()) >
                                                         0) {
                                                       Utils.scheduleReminder(
-                                                          snapshot.data.documents[index]
-                                                              .data['reminderDate']
+                                                          snapshot
+                                                              .data
+                                                              .docs[index][
+                                                                  'reminderDate']
                                                               .toDate(),
-                                                          snapshot.data.documents[index]
-                                                              .data['reminderName'],
-                                                          Utils.getUniqueRandomNumber());
+                                                          snapshot.data
+                                                                  .docs[index]
+                                                              ['reminderName'],
+                                                          Utils
+                                                              .getUniqueRandomNumber());
                                                     }
                                                     reminderRef
                                                         .add({
                                                           'notificationID': snapshot
-                                                              .data
-                                                              .documents[index]
-                                                              .data['notificationID'],
+                                                                  .data
+                                                                  .docs[index][
+                                                              'notificationID'],
                                                           'productImage': snapshot
-                                                              .data
-                                                              .documents[index]
-                                                              .data['productImage'],
+                                                                  .data
+                                                                  .docs[index]
+                                                              ['productImage'],
                                                           'productBarcode': snapshot
-                                                              .data
-                                                              .documents[index]
-                                                              .data['productBarcode'],
+                                                                  .data
+                                                                  .docs[index][
+                                                              'productBarcode'],
                                                           'reminderName': snapshot
-                                                              .data
-                                                              .documents[index]
-                                                              .data['reminderName'],
+                                                                  .data
+                                                                  .docs[index]
+                                                              ['reminderName'],
                                                           'reminderDate': snapshot
-                                                              .data
-                                                              .documents[index]
-                                                              .data['reminderDate'],
+                                                                  .data
+                                                                  .docs[index]
+                                                              ['reminderDate'],
                                                           'reminderDesc': snapshot
-                                                              .data
-                                                              .documents[index]
-                                                              .data['reminderDesc'],
-                                                          'isExpired': snapshot.data
-                                                              .documents[index].data['isExpired'],
-                                                          'expiryDate': snapshot.data
-                                                              .documents[index].data['expiryDate'],
+                                                                  .data
+                                                                  .docs[index]
+                                                              ['reminderDesc'],
+                                                          'isExpired': snapshot
+                                                                  .data
+                                                                  .docs[index]
+                                                              ['isExpired'],
+                                                          'expiryDate': snapshot
+                                                                  .data
+                                                                  .docs[index]
+                                                              ['expiryDate'],
                                                         })
-                                                        .whenComplete(() => Utils.deleteReminder(
-                                                            snapshot.data.documents[index], false))
-                                                        .whenComplete(() => Navigator.pop(context))
                                                         .whenComplete(() =>
-                                                            Utils.showToast('Reminder restored.'));
+                                                            Utils.deleteReminder(
+                                                                snapshot.data
+                                                                        .docs[
+                                                                    index],
+                                                                false))
+                                                        .whenComplete(() =>
+                                                            Navigator.pop(
+                                                                context))
+                                                        .whenComplete(() =>
+                                                            Utils.showToast(
+                                                                'Reminder restored.'));
                                                   },
                                                   child: Text('Restore')),
                                               CupertinoActionSheetAction(
                                                   isDestructiveAction: true,
-                                                  onPressed: () => Utils.deleteReminder(
-                                                          snapshot.data.documents[index], true)
-                                                      .whenComplete(() => Navigator.pop(context))
+                                                  onPressed: () => Utils
+                                                          .deleteReminder(
+                                                              snapshot.data
+                                                                  .docs[index],
+                                                              true)
                                                       .whenComplete(() =>
-                                                          Utils.showToast('Reminder deleted.')),
+                                                          Navigator.pop(
+                                                              context))
+                                                      .whenComplete(() =>
+                                                          Utils.showToast(
+                                                              'Reminder deleted.')),
                                                   child: Text('Delete')),
                                             ],
-                                            cancelButton: CupertinoActionSheetAction(
+                                            cancelButton:
+                                                CupertinoActionSheetAction(
                                               child: Text('Cancel'),
-                                              onPressed: () => Navigator.pop(context),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
                                             ),
                                           ));
                                 },
                                 child: Padding(
                                   padding: EdgeInsets.all(20.0),
                                   child: Text(
-                                    snapshot.data.documents[index].data['reminderName'],
-                                    style: TextStyle(fontSize: 18, color: appBlack),
+                                    snapshot.data.docs[index]['reminderName'],
+                                    style: TextStyle(
+                                        fontSize: 18, color: appBlack),
                                   ),
                                 )),
                           ),
@@ -275,7 +326,8 @@ class _HomeState extends State<Home> {
                       alignment: AlignmentDirectional.topCenter,
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(20, 20, 20, 40),
-                        child: Text('Start filling up this section by consuming your food!',
+                        child: Text(
+                            'Start filling up this section by consuming your food!',
                             style: errorTextStyle.copyWith(color: appBlack)),
                       ),
                     );

@@ -139,38 +139,38 @@ class _AllRemindersState extends State<AllReminders> {
   }
 
   getActiveRemindersSnapshot() async {
-    final user = Provider.of<User>(context);
-    var reminderRef = await Firestore.instance
+    final user = Provider.of<AppUser>(context);
+    var reminderRef = await FirebaseFirestore.instance
         .collection('appUsers')
-        .document(user.uid)
+        .doc(user.uid)
         .collection('reminders')
         .where('isExpired', isEqualTo: 'No')
         .orderBy('expiryDate')
-        .getDocuments();
+        .get();
 
     if (this.mounted) {
       setState(() {
-        _activeReminders = reminderRef.documents;
+        _activeReminders = reminderRef.docs;
       });
     }
-    return reminderRef.documents;
+    return reminderRef.docs;
   }
 
   getExpiredRemindersSnapshot() async {
-    final user = Provider.of<User>(context);
-    var reminderRef = await Firestore.instance
+    final user = Provider.of<AppUser>(context);
+    var reminderRef = await FirebaseFirestore.instance
         .collection('appUsers')
-        .document(user.uid)
+        .doc(user.uid)
         .collection('reminders')
         .where('isExpired', isEqualTo: 'Yes')
         .orderBy('expiryDate')
-        .getDocuments();
+        .get();
 
     if (this.mounted) {
       setState(() {
-        _expiredReminders = reminderRef.documents;
+        _expiredReminders = reminderRef.docs;
       });
     }
-    return reminderRef.documents;
+    return reminderRef.docs;
   }
 }

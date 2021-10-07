@@ -68,7 +68,7 @@ class _EditReminderState extends State<EditReminder> {
         ? Loading()
         : Scaffold(
             appBar: CupertinoNavigationBar(
-                actionsForegroundColor: Colors.black,
+                // actionsForegroundColor: Colors.black,
                 backgroundColor: appGreen,
                 middle: Text(
                   'Edit reminder',

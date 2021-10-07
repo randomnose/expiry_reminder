@@ -7,13 +7,13 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // create user obj based on firebase user
-  User _userFromFirebaseUser(FirebaseUser user) {
-    return user != null ? User(uid: user.uid) : null;
+  AppUser _userFromFirebaseUser(User user) {
+    return user != null ? AppUser(uid: user.uid) : null;
   }
 
   // auth change user stream
-  Stream<User> get user {
-    return _auth.onAuthStateChanged
+  Stream<AppUser> get user {
+    return _auth.authStateChanges()
         //.map((FirebaseUser user) => _userFromFirebaseUser(user));
         .map(_userFromFirebaseUser);
   }
@@ -21,8 +21,8 @@ class AuthService {
   // sign in anon
   Future signInAnon() async {
     try {
-      AuthResult result = await _auth.signInAnonymously();
-      FirebaseUser user = result.user;
+      UserCredential result = await _auth.signInAnonymously();
+      User user = result.user;
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
@@ -33,9 +33,9 @@ class AuthService {
   // sign in with email and password
   Future signInWithEmailAndPassword({String email, String password}) async {
     try {
-      AuthResult result = await _auth.signInWithEmailAndPassword(
+      UserCredential result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      FirebaseUser user = result.user;
+      User user = result.user;
       return user;
     } catch (e) {
       print(e.toString());
@@ -46,9 +46,9 @@ class AuthService {
   // register with email and password
   Future registerWithEmailAndPassword({String email, String password}) async {
     try {
-      AuthResult result = await _auth.createUserWithEmailAndPassword(
+      UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      FirebaseUser user = result.user;
+      User user = result.user;
 
       // create a new document for user with the particular uid
       await DatabaseService(uid: user.uid).updateUserData('New member', user.email);

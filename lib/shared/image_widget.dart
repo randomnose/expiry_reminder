@@ -6,7 +6,7 @@ import 'package:path/path.dart';
 
 class ImageWidget {
   static Future getImage() async {
-    final image = await ImagePicker().getImage(source: ImageSource.camera, imageQuality: 80);
+    final image = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 80);
     File newImage;
     if (image != null) {
       newImage = File(image.path);
@@ -17,9 +17,9 @@ class ImageWidget {
   static Future<String> uploadImageToFirebase(File imageToBeUpload, bool deleteImage,
       [String imageUrl]) async {
     String fileName = basename(imageToBeUpload.path);
-    StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/$fileName');
-    StorageUploadTask uploadTask = firebaseStorageRef.putFile(imageToBeUpload);
-    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/$fileName');
+    UploadTask uploadTask = firebaseStorageRef.putFile(imageToBeUpload);
+    TaskSnapshot taskSnapshot = await uploadTask;
     final String newImageUrl = await taskSnapshot.ref.getDownloadURL();
 
     // delete old image
@@ -32,7 +32,7 @@ class ImageWidget {
 
   static deleteImageFromStorage(String url) async {
     if (url != null) {
-      StorageReference imgStorageRef = await FirebaseStorage.instance.getReferenceFromUrl(url);
+      Reference imgStorageRef = FirebaseStorage.instance.refFromURL(url);
       await imgStorageRef
           .delete()
           .catchError((onError) => print('An error has occured when deleting image.\n $onError'));

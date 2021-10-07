@@ -32,21 +32,21 @@ class Utils {
   // Function to delete reminder along with the image
   static deleteReminder(DocumentSnapshot docToDelete, bool ifCompletelyDelete) async {
     if (ifCompletelyDelete == true) {
-      deleteSpecificScheduledReminder(docToDelete.data['notificationID']);
+      deleteSpecificScheduledReminder(docToDelete['notificationID']);
 
       // if the productImage is not null, then we delete the image.
-      if (docToDelete.data['productImage'] != null) {
-        StorageReference imgStorageRef =
-            await FirebaseStorage.instance.getReferenceFromUrl(docToDelete.data['productImage']);
+      if (docToDelete['productImage'] != null) {
+        Reference imgStorageRef =
+             FirebaseStorage.instance.refFromURL(docToDelete['productImage']);
 
-        print(imgStorageRef.path);
+        print(imgStorageRef);
 
         await imgStorageRef
             .delete()
             .catchError((onError) => print('An error has occured when deleting image.\n $onError'));
 
         print(
-            'Image corresponding to >>>>>${docToDelete.data['reminderName']}<<<<< has been successfuly deleted.');
+            'Image corresponding to >>>>>${docToDelete['reminderName']}<<<<< has been successfuly deleted.');
       }
     }
     // delete the document reference along with the image.
@@ -67,7 +67,6 @@ class Utils {
     var androidPlatformChannelSpecifics = localNoti.AndroidNotificationDetails(
       'alarm_notif',
       'alarm_notif',
-      'Channel for Alarm notification',
       icon: 'logo_no_name',
       largeIcon: localNoti.DrawableResourceAndroidBitmap('logo_no_name'),
       playSound: true,

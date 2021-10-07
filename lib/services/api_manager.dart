@@ -12,7 +12,7 @@ class APIManager {
     try {
       print('The barcode received by method "getProductInfoFromAPI" is -> $barcodeNumber');
 
-      var response = await client.get(Utils.barcodeUrl(barcodeNumber));
+      var response = await client.get(Uri.parse(Utils.barcodeUrl(barcodeNumber)));
       print(response.statusCode);
       // only carries out when there is a successful response.
       if (response.statusCode == 200) {

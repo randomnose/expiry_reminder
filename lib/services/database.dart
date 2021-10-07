@@ -6,7 +6,7 @@ class DatabaseService {
 //   // collection reference
 //   // a reference to a particular collection in FireStore Database
   final CollectionReference appUserCollection =
-      Firestore.instance.collection('appUsers');
+      FirebaseFirestore.instance.collection('appUsers');
 //   // final CollectionReference expiryReminderCollection =
 //   //     Firestore.instance.collection('testingCollection');
 //   final CollectionReference testingCollection =
@@ -23,8 +23,8 @@ class DatabaseService {
 //   // }
   Future updateUserData(String name, String email) async {
     return await appUserCollection
-        .document(uid)
-        .setData({'name': name, 'email': email});
+        .doc(uid)
+        .set({'name': name, 'email': email});
   }
 
 //   // // reminder list from snapshot

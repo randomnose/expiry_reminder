@@ -23,11 +23,11 @@ class _ReminderTileState extends State<ReminderTile> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<User>(context);
+    final user = Provider.of<AppUser>(context);
 
-    final completedReminders = Firestore.instance
+    final completedReminders = FirebaseFirestore.instance
         .collection('appUsers')
-        .document(user.uid)
+        .doc(user.uid)
         .collection('completedReminders');
 
     return Padding(
@@ -50,17 +50,17 @@ class _ReminderTileState extends State<ReminderTile> {
                             isDefaultAction: true,
                             onPressed: () {
                               Utils.deleteSpecificScheduledReminder(
-                                  widget.documentRef.data['notificationID']);
+                                  widget.documentRef['notificationID']);
                               completedReminders
                                   .add({
-                                    'notificationID': widget.documentRef.data['notificationID'],
-                                    'productImage': widget.documentRef.data['productImage'],
-                                    'productBarcode': widget.documentRef.data['productBarcode'],
-                                    'reminderName': widget.documentRef.data['reminderName'],
-                                    'reminderDate': widget.documentRef.data['reminderDate'],
-                                    'reminderDesc': widget.documentRef.data['reminderDesc'],
-                                    'isExpired': widget.documentRef.data['isExpired'],
-                                    'expiryDate': widget.documentRef.data['expiryDate'],
+                                    'notificationID': widget.documentRef['notificationID'],
+                                    'productImage': widget.documentRef['productImage'],
+                                    'productBarcode': widget.documentRef['productBarcode'],
+                                    'reminderName': widget.documentRef['reminderName'],
+                                    'reminderDate': widget.documentRef['reminderDate'],
+                                    'reminderDesc': widget.documentRef['reminderDesc'],
+                                    'isExpired': widget.documentRef['isExpired'],
+                                    'expiryDate': widget.documentRef['expiryDate'],
                                   })
                                   .whenComplete(
                                       () => Utils.deleteReminder(widget.documentRef, false))
@@ -85,7 +85,7 @@ class _ReminderTileState extends State<ReminderTile> {
             height: 110,
             child: Row(
               children: [
-                widget.documentRef.data['productImage'] == null
+                widget.documentRef['productImage'] == null
                     ? Image.asset(
                         'assets/image_placeholder.png',
                         fit: BoxFit.cover,
@@ -94,7 +94,7 @@ class _ReminderTileState extends State<ReminderTile> {
                         color: appButtonBrown,
                       )
                     : Image.network(
-                        widget.documentRef.data['productImage'],
+                        widget.documentRef['productImage'],
                         fit: BoxFit.cover,
                         height: 110,
                         width: 100,
@@ -108,7 +108,7 @@ class _ReminderTileState extends State<ReminderTile> {
                         Padding(
                           padding: EdgeInsets.only(bottom: 5.0),
                           child: Text(
-                            widget.documentRef.data['reminderName'],
+                            widget.documentRef['reminderName'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: errorTextStyle.copyWith(fontSize: 19, color: appBlack),
@@ -117,25 +117,25 @@ class _ReminderTileState extends State<ReminderTile> {
                         Padding(
                           padding: EdgeInsets.only(bottom: 5.0),
                           child: Text(
-                            widget.documentRef.data['reminderDesc'] == ''
+                            widget.documentRef['reminderDesc'] == ''
                                 ? 'No description'
-                                : widget.documentRef.data['reminderDesc'],
+                                : widget.documentRef['reminderDesc'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
-                        Utils.showDateDifference(widget.documentRef.data['expiryDate'].toDate()) <=
+                        Utils.showDateDifference(widget.documentRef['expiryDate'].toDate()) <=
                                 0
                             ? Text(
                                 'Expired on: ' +
                                     dateFormat
-                                        .format(widget.documentRef.data['expiryDate'].toDate()),
+                                        .format(widget.documentRef['expiryDate'].toDate()),
                                 style: errorTextStyle.copyWith(fontSize: 15))
                             : Text(
                                 'Expiring on: ' +
                                     dateFormat
-                                        .format(widget.documentRef.data['expiryDate'].toDate()),
+                                        .format(widget.documentRef['expiryDate'].toDate()),
                                 style: errorTextStyle.copyWith(fontSize: 15, color: Colors.black),
                               )
                       ],
